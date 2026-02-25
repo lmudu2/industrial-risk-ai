@@ -80,24 +80,25 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    .stApp {
-        background-color: #f8f9fa; /* Light Gray Background */
-        color: #1f2937 !important; /* Force Dark Text */
+    .stApp, [data-testid="stSidebar"], [data-testid="stHeader"], .st-emotion-cache-16txtl3 {
+        background-color: #f8f9fa !important;
+        color: #1f2937 !important;
     }
     
     /* Ensure all headers and text are visible */
-    h1, h2, h3, h4, h5, h6, p, div, span, label {
+    h1, h2, h3, h4, h5, h6, p, div, span, label, .stMarkdown {
         color: #1f2937 !important;
     }
     
     /* Input and Select box Fixes */
-    .stSelectbox > div > div > div {
+    .stSelectbox [data-testid="stMarkdownContainer"], .stTextInput input {
         color: #1f2937 !important;
         background-color: #ffffff !important;
     }
-    .stTextInput > div > div > input {
-        color: #1f2937 !important;
+
+    [data-testid="stSidebar"] {
         background-color: #ffffff !important;
+        border-right: 1px solid #e5e7eb;
     }
     
     /* Navigation Bar adjustment */
