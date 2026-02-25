@@ -1,0 +1,45 @@
+# Environment variables
+.env
+
+# Virtual Environment
+venv/
+venv2/
+env/
+.venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+*.db
+*.sqlite3
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Large Data (Code handles generation)
+data/
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# Streamlit logs/cache
+.streamlit/
+!.streamlit/config.toml
+
+# LLM/Brain artifacts (Internal development files)
+.gemini/
+.agents/
+brain/
+
+# Temporary / Test scripts
+test_*.py
+list_models.py
+refresh_predictions.py
+
+# Logs
+*.log
