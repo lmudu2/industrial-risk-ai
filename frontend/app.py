@@ -154,7 +154,11 @@ st.markdown("""
 def load_models():
     """Load ML models"""
     try:
-        cost_model = joblib.load('../ml/models/cost_predictor.pkl')
+        # Standardize paths for both local and cloud deployment
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        models_dir = os.path.join(os.path.dirname(current_dir), 'ml', 'models')
+        
+        cost_model = joblib.load(os.path.join(models_dir, 'cost_predictor.pkl'))
         return None, None, None, cost_model
     except Exception as e:
         st.error(f"Error loading models: {e}")
