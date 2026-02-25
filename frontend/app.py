@@ -17,34 +17,50 @@ import joblib
 import numpy as np
 import os
 import sys
+import traceback
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-# Load environment variables
-load_dotenv()
+# ─────────────────────────────────────────────
+# DIAGNOSTIC BOOTSTRAP
+# ─────────────────────────────────────────────
+try:
+    # Load environment variables
+    load_dotenv()
 
-# Streamlit Cloud Secret Mapping
-if hasattr(st, "secrets"):
-    for key, value in st.secrets.items():
-        if key not in os.environ:
-            os.environ[key] = str(value)
+    # Streamlit Cloud Secret Mapping
+    if hasattr(st, "secrets"):
+        for key, value in st.secrets.items():
+            if key not in os.environ:
+                os.environ[key] = str(value)
 
-# Add backend and ml to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ml'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
+    # Add backend, ml, and data to path
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+    ROOT_DIR = os.path.dirname(CURRENT_DIR)
+    
+    for folder in ['backend', 'ml', 'data']:
+        folder_path = os.path.join(ROOT_DIR, folder)
+        if folder_path not in sys.path:
+            sys.path.append(folder_path)
 
-from database import SessionLocal, engine, Base
-import models
-from models import WorkOrder
-import predict
-import chatbot_service
-from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
+    from database import SessionLocal, engine, Base
+    import models
+    from models import WorkOrder
+    import predict
+    import chatbot_service
+    from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
 
-# INITIALIZE DATABASE
-Base.metadata.create_all(bind=engine)
+    # INITIALIZE DATABASE
+    Base.metadata.create_all(bind=engine)
+
+except Exception as e:
+    st.error("🚨 **Critical Startup Error Detected**")
+    st.exception(e)
+    st.write("---")
+    st.write("Current sys.path:", sys.path)
+    st.stop()
 
 # ─────────────────────────────────────────────
 # CUSTOM CSS - PROFESSIONAL LIGHT MODE

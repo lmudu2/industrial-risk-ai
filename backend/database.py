@@ -16,7 +16,7 @@ DATABASE_PATH = os.path.join(BACKEND_DIR, "eam_database.db")
 # Create connection string (tells Python how to connect)
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
-print(f"📍 Database will be stored at: {DATABASE_PATH}")
+# DATABASE_PATH used by other modules
 
 # ─────────────────────────────────────────────
 # STEP 2: Create the database engine
