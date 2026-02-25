@@ -334,18 +334,31 @@ RAW_STRATEGIES = ["Holistic", "Predictive", "Preventive", "Ad-hoc / On-demand"]
 
 # Calculate counts for labels (used only in Asset Monitor)
 all_fleet_preds = get_fleet_predictions_v3()
-pred_df = pd.DataFrame(all_fleet_preds)
+if not all_fleet_preds:
+    # Handle empty state for fresh deployment
+    pred_df = pd.DataFrame(columns=['id', 'risk_level', 'asset_type', 'industry_name'])
+else:
+    pred_df = pd.DataFrame(all_fleet_preds)
 
 count_holistic = len(df_assets)
-count_predictive = len(pred_df[pred_df['risk_level'].isin(['Critical', 'High Risk'])])
-count_preventive = len(pred_df[pred_df['risk_level'] == 'Warning'])
+
+# Safe column access using .get or checking empty
+if not pred_df.empty:
+    count_predictive = len(pred_df[pred_df['risk_level'].isin(['Critical', 'High Risk'])])
+    count_preventive = len(pred_df[pred_df['risk_level'] == 'Warning'])
+else:
+    count_predictive = 0
+    count_preventive = 0
 
 # Ad-hoc logic matching refined filter
-active_wo_mask = (df_wo['status'] == 'in_progress')
-adhoc_keywords = ["Emergency"]
-keyword_mask = df_wo['title'].str.contains('|'.join(adhoc_keywords), case=False, na=False)
-priority_mask = df_wo['priority'].isin(['critical', 'high'])
-count_adhoc = df_wo[active_wo_mask & keyword_mask & priority_mask]['asset_id'].nunique()
+if not df_wo.empty and all(col in df_wo.columns for col in ['status', 'title', 'priority', 'asset_id']):
+    active_wo_mask = (df_wo['status'] == 'in_progress')
+    adhoc_keywords = ["Emergency"]
+    keyword_mask = df_wo['title'].str.contains('|'.join(adhoc_keywords), case=False, na=False)
+    priority_mask = df_wo['priority'].isin(['critical', 'high'])
+    count_adhoc = df_wo[active_wo_mask & keyword_mask & priority_mask]['asset_id'].nunique()
+else:
+    count_adhoc = 0
 
 STRATEGY_MAP_WITH_COUNTS = {
     "Holistic": f"Holistic ({count_holistic})",
