@@ -9,8 +9,10 @@ This platform provides a comprehensive suite for cross-industry asset management
 - **AI-Driven Reasoning**: Integration with Llama-3 (via Groq) to provide natural language insights, strategic maintenance advice, and an interactive fleet assistant.
 - **Autonomous Dispatch**: Tiered automation that triggers alerts and work orders instantly for high-confidence critical failures.
 
-## 🌐 Live Demo
-Experience the platform live: [Industrial Risk AI Dashboard](https://chatbotservicepy-nuclcdfs5huczcuadti3as.streamlit.app)
+## 🌐 Deployment Options
+- **Streamlit Cloud (Live)**: [Industrial Risk AI Dashboard](https://chatbotservicepy-nuclcdfs5huczcuadti3as.streamlit.app)
+- **Google Colab (Interactive)**: Launch via [notebooks/launch_on_colab.ipynb](https://github.com/lmudu2/industrial-risk-ai/blob/main/notebooks/launch_on_colab.ipynb)
+    - *Note: Add your `GROQ_API_KEY` to Colab Secrets before running.*
 
 ## 🏗️ Architecture
 - **Frontend**: Streamlit-based AI-first dashboard with glassmorphism aesthetics and interactive visualizations.
