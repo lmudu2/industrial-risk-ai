@@ -48,8 +48,7 @@ try:
     from database import SessionLocal, engine, Base
     import models
     from models import WorkOrder
-    import predict
-    import chatbot_service
+    from predict import predict_asset_risk, predict_fleet_risk
     from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
 
     # INITIALIZE DATABASE
