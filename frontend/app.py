@@ -76,25 +76,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ── INITIAL SETUP WIZARD (CLOUD DEPLOYMENT) ──
-if is_db_empty:
-    st.warning("🚀 **Welcome to the Industrial Risk AI Platform!**")
-    st.info("The database is currently empty. To see the platform in action, click the button below to initialize a demo fleet with simulated sensor telemetry and ML-driven risk scores.")
-    
-    if st.button("🏗️ Initialize Demo Fleet (Fast Mode)", type="primary"):
-        with st.spinner("🔧 Calibrating industrial assets and generating 6 months of telemetry..."):
-            try:
-                # Use fast mode (3 assets per industry) for quick cloud setup
-                generate_data(num_assets_per_industry=3)
-                st.success("✅ Demo fleet successfully initialized! Refreshing dashboard...")
-                st.balloons()
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error during initialization: {str(e)}")
-    
-    st.divider()
-
-
 # ─────────────────────────────────────────────
 # CUSTOM CSS - PROFESSIONAL LIGHT MODE
 # ─────────────────────────────────────────────

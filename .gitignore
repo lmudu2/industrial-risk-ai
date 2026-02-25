@@ -13,7 +13,7 @@ __pycache__/
 *$py.class
 
 # Database
-*.db
+# *.db  <-- Unignored to mirror local state exactly
 *.sqlite3
 
 # OS Files
