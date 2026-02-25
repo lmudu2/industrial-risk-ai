@@ -45,11 +45,25 @@ if 'chatbot_service' in sys.modules:
     importlib.reload(sys.modules['chatbot_service'])
 from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
 
+# Add data to path for generator
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
+from generate_data import generate_data
+
 # ─────────────────────────────────────────────
 # INITIALIZE DATABASE (Crucial for Cloud Deployment)
 # ─────────────────────────────────────────────
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
+
+# Check if database is empty and need seeding
+def check_database_empty():
+    db = SessionLocal()
+    from models import Asset
+    count = db.query(Asset).count()
+    db.close()
+    return count == 0
+
+is_db_empty = check_database_empty()
 
 # ─────────────────────────────────────────────
 # CONFIGURATION
@@ -61,6 +75,24 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# ── INITIAL SETUP WIZARD (CLOUD DEPLOYMENT) ──
+if is_db_empty:
+    st.warning("🚀 **Welcome to the Industrial Risk AI Platform!**")
+    st.info("The database is currently empty. To see the platform in action, click the button below to initialize a demo fleet with simulated sensor telemetry and ML-driven risk scores.")
+    
+    if st.button("🏗️ Initialize Demo Fleet (Fast Mode)", type="primary"):
+        with st.spinner("🔧 Calibrating industrial assets and generating 6 months of telemetry..."):
+            try:
+                # Use fast mode (3 assets per industry) for quick cloud setup
+                generate_data(num_assets_per_industry=3)
+                st.success("✅ Demo fleet successfully initialized! Refreshing dashboard...")
+                st.balloons()
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error during initialization: {str(e)}")
+    
+    st.divider()
 
 
 # ─────────────────────────────────────────────

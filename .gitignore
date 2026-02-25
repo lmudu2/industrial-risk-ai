@@ -22,6 +22,10 @@ Thumbs.db
 
 # Large Data (Code handles generation)
 data/
+!data/*.py
+!data/datasets/
+data/datasets/*
+!data/datasets/.gitkeep
 
 # IDE/Editor
 .vscode/
