@@ -50,20 +50,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
 from generate_data import generate_data
 
 # ─────────────────────────────────────────────
-# INITIALIZE DATABASE (Crucial for Cloud Deployment)
+# INITIALIZE DATABASE
 # ─────────────────────────────────────────────
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
-
-# Check if database is empty and need seeding
-def check_database_empty():
-    db = SessionLocal()
-    from models import Asset
-    count = db.query(Asset).count()
-    db.close()
-    return count == 0
-
-is_db_empty = check_database_empty()
 
 # ─────────────────────────────────────────────
 # CONFIGURATION
