@@ -415,7 +415,8 @@ def get_executive_briefing(telemetry_data):
 
     client = Groq(api_key=api_key)
     
-    alert_label = telemetry_data.get('alert_type_name', 'Critical AI Alerts')
+    alert_label = telemetry_data.get('alert_type_label', 'Critical AI Alerts')
+    alert_count = telemetry_data.get('critical_alerts_count', 0)
     spend = telemetry_data.get('total_maintenance_spend', 0)
     liability = telemetry_data.get('predicted_liability', 0)
     
@@ -433,11 +434,11 @@ def get_executive_briefing(telemetry_data):
     - Total Assets Monitored: {telemetry_data.get('total_assets', 0)}
     - Active Maintenance Tickets (Work Orders): {telemetry_data.get('active_work_orders', 0)}
     - Total Maintenance Spend: {spend_fmt}
-    - {alert_label}: {telemetry_data.get('critical_alerts', 0)}
+    - {alert_label} (Total Count): {alert_count}
     - Total Predicted Liability: {liability_fmt}
     
-    Top Imminent Failures (if any):
-    {telemetry_data.get('top_failures', 'None detected.')}
+    Top Imminent Failure Examples (Sample of total):
+    {telemetry_data.get('imminent_failure_examples', 'None detected.')}
     
     Formatting Rules:
     - Keep it under 50 words.

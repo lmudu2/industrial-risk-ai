@@ -701,10 +701,10 @@ if selected == "Executive Overview":
         "total_assets": total_assets,
         "active_work_orders": len(active_wo),
         "total_maintenance_spend": total_spend,
-        "critical_alerts": alert_count_briefing,
+        "critical_alerts_count": alert_count_briefing,
         "predicted_liability": predicted_liability,
-        "alert_type_name": alert_type_name,
-        "top_failures": ", ".join([f"{row['name']} ({row['risk_score']}%)" for idx, row in top_list.head(3).iterrows()]) if not top_list.empty else "None"
+        "alert_type_label": alert_type_name,
+        "imminent_failure_examples": ", ".join([f"{row['name']} ({row['risk_score']}%)" for idx, row in top_list.head(10).iterrows()]) if not top_list.empty else "None"
     }
     
     with st.spinner("AI is analyzing real-time factory state..."):
