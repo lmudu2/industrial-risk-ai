@@ -26,7 +26,8 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ml'))
 
-from database import SessionLocal, engine
+from database import SessionLocal, engine, Base
+import models  # Ensure models are registered for Base
 import predict
 import importlib
 if 'predict' in sys.modules:
@@ -37,7 +38,12 @@ import chatbot_service
 if 'chatbot_service' in sys.modules:
     importlib.reload(sys.modules['chatbot_service'])
 from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
-from models import WorkOrder
+
+# ─────────────────────────────────────────────
+# INITIALIZE DATABASE (Crucial for Cloud Deployment)
+# ─────────────────────────────────────────────
+# Create tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
 # ─────────────────────────────────────────────
 # CONFIGURATION
