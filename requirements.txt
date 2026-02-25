@@ -2,6 +2,7 @@ fastapi
 uvicorn 
 sqlalchemy 
 streamlit 
+streamlit-option-menu
 pandas 
 numpy 
 scikit-learn 
@@ -10,3 +11,4 @@ plotly
 requests
 python-dotenv
 groq
+sendgrid
