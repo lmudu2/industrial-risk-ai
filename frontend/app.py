@@ -1,5 +1,13 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+
+# MUST BE THE FIRST STREAMLIT COMMAND
+st.set_page_config(
+    page_title="EAM Control Center",
+    page_icon="🏭",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -9,7 +17,6 @@ import numpy as np
 import os
 import sys
 from datetime import datetime, timezone
-import os
 from dotenv import load_dotenv
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -17,55 +24,26 @@ from sendgrid.helpers.mail import Mail
 # Load environment variables
 load_dotenv()
 
-# Streamlit Cloud Secret Mapping (Ensures os.getenv picks up Streamlit Secrets)
+# Streamlit Cloud Secret Mapping
 if hasattr(st, "secrets"):
     for key, value in st.secrets.items():
         if key not in os.environ:
             os.environ[key] = str(value)
 
-# Add backend to path for DB access
-# Add backend and ml to path
-import sys
-import os
-
 # Add backend and ml to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ml'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
 from database import SessionLocal, engine, Base
-import models  # Ensure models are registered for Base
+import models
 from models import WorkOrder
 import predict
-import importlib
-if 'predict' in sys.modules:
-    importlib.reload(sys.modules['predict'])
-from predict import predict_asset_risk, predict_fleet_risk
-
 import chatbot_service
-if 'chatbot_service' in sys.modules:
-    importlib.reload(sys.modules['chatbot_service'])
 from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
 
-# Add data to path for generator
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
-from generate_data import generate_data
-
-# ─────────────────────────────────────────────
 # INITIALIZE DATABASE
-# ─────────────────────────────────────────────
-# Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
-
-# ─────────────────────────────────────────────
-# CONFIGURATION
-# ─────────────────────────────────────────────
-
-st.set_page_config(
-    page_title="EAM Control Center",
-    page_icon="🏭",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
 
 # ─────────────────────────────────────────────
 # CUSTOM CSS - PROFESSIONAL LIGHT MODE
