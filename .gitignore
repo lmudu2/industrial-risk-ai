@@ -41,5 +41,8 @@ test_*.py
 list_models.py
 refresh_predictions.py
 
+# Internal Documentation
+project_recap_and_learnings.md
+
 # Logs
 *.log
