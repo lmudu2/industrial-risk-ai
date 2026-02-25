@@ -17,6 +17,12 @@ from sendgrid.helpers.mail import Mail
 # Load environment variables
 load_dotenv()
 
+# Streamlit Cloud Secret Mapping (Ensures os.getenv picks up Streamlit Secrets)
+if hasattr(st, "secrets"):
+    for key, value in st.secrets.items():
+        if key not in os.environ:
+            os.environ[key] = str(value)
+
 # Add backend to path for DB access
 # Add backend and ml to path
 import sys
