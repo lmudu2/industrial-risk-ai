@@ -34,6 +34,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ml'))
 
 from database import SessionLocal, engine, Base
 import models  # Ensure models are registered for Base
+from models import WorkOrder
 import predict
 import importlib
 if 'predict' in sys.modules:
