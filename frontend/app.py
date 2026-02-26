@@ -49,7 +49,7 @@ try:
     import models
     from models import WorkOrder
     from predict import predict_asset_risk, predict_fleet_risk
-    from chatbot_service import get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
+    from chatbot_service import generate_response, get_maintenance_recommendation, get_signal_insights, get_executive_briefing, get_sensor_summary
 
     # INITIALIZE DATABASE
     Base.metadata.create_all(bind=engine)
@@ -1596,9 +1596,8 @@ elif selected == "AI Assistant":
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Call Backend
+        # Call Direct Module (Fixed: Bypassing HTTP for Cloud Stability)
         try:
-            api_url = "http://127.0.0.1:8000/chat"
             
             # Dynamically calculate global site state since UX filters are out of scope
             chat_predicted_assets = batch_predict_assets(df_assets)
@@ -1652,14 +1651,8 @@ elif selected == "AI Assistant":
                 "priority_work_orders": active_wos_list if not priority_wos.empty else "No active priority work orders"
             }
             
-            response = requests.post(
-                api_url, 
-                json={
-                    "query": prompt,
-                    "context_data": context_payload
-                }
-            )
-            ai_reply = response.json().get("response", "Error getting response.")
+            # Generate response directly (Bypassing HTTP for Cloud Stability)
+            ai_reply = generate_response(prompt, context=context_payload)
         except Exception as e:
             ai_reply = f"🔌 Connection or processing error: {e}"
 
