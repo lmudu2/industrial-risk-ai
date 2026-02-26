@@ -1020,7 +1020,7 @@ elif selected == "Asset Monitor":
 
     # Trigger Sync: If the user picks an asset, automatically align the Strategic View
     if "last_synced_asset" not in st.session_state:
-        st.session_state.last_synced_asset = asset_id
+        st.session_state.last_synced_asset = None
 
     if st.session_state.last_synced_asset != asset_id:
         st.session_state.last_synced_asset = asset_id
@@ -1042,6 +1042,8 @@ elif selected == "Asset Monitor":
         # Only switch if there's a mismatch and we're not in a manual Ad-hoc state
         if st.session_state.selected_strategy_key != target_strategy and st.session_state.selected_strategy_key != "Ad-hoc / On-demand":
             st.session_state.selected_strategy_key = target_strategy
+            # Explicitly update the widget state to force the UI to refresh with the new selection
+            st.session_state.strategy_selector_monitor = STRATEGY_MAP_WITH_COUNTS[target_strategy]
             st.rerun()
 
     if filtered_assets.empty or asset_id not in filtered_assets["id"].values:
