@@ -1010,11 +1010,40 @@ elif selected == "Asset Monitor":
         adhoc_asset_ids = df_wo[active_wo_mask & keyword_mask & priority_mask]['asset_id'].unique().tolist()
         filtered_assets = df_assets[df_assets['id'].isin(adhoc_asset_ids)]
 
+    # ── ASSET SELECTION & INTELLIGENT SYNC ─────────────────────────────────────
     asset_id = f2.selectbox(
         "Asset",
         options=filtered_assets["id"].unique(),
+        key="asset_monitor_selector",
         format_func=lambda x: f"{filtered_assets[filtered_assets['id']==x]['name'].iloc[0]}  ({filtered_assets[filtered_assets['id']==x]['asset_type'].iloc[0]})"
     )
+
+    # Trigger Sync: If the user picks an asset, automatically align the Strategic View
+    if "last_synced_asset" not in st.session_state:
+        st.session_state.last_synced_asset = asset_id
+
+    if st.session_state.last_synced_asset != asset_id:
+        st.session_state.last_synced_asset = asset_id
+        
+        # Predict once for the newly selected asset to determine its correct strategy
+        db = SessionLocal()
+        risk_profile = predict_asset_risk(asset_id, db)
+        db.close()
+        
+        detected_risk = risk_profile.get("risk_level", "Healthy")
+        
+        # Map Risk Level to the corresponding Strategy
+        target_strategy = "All"
+        if detected_risk in ["Critical", "High Risk"]:
+            target_strategy = "Predictive"
+        elif detected_risk == "Warning":
+            target_strategy = "Preventive"
+            
+        # Only switch if there's a mismatch and we're not in a manual Ad-hoc state
+        if st.session_state.selected_strategy_key != target_strategy and st.session_state.selected_strategy_key != "Ad-hoc / On-demand":
+            st.session_state.selected_strategy_key = target_strategy
+            st.rerun()
+
     if filtered_assets.empty or asset_id not in filtered_assets["id"].values:
         st.warning(f"No assets found for the '{strategy_view}' view.")
         st.stop()
