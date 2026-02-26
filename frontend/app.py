@@ -1637,10 +1637,13 @@ elif selected == "AI Assistant":
                 chat_predicted_df['urgent_repair_cost'] = chat_predicted_df['predicted_cost'] * 0.40
                 chat_predicted_df['extra_delay_penalty'] = chat_predicted_df['predicted_cost'] * 0.60
                 
-                # Keep keys matching the schema
-                critical_list = chat_predicted_df[['id', 'name', 'industry_name', 'risk_level', 'risk_score', 'predicted_cost', 'urgent_repair_cost', 'extra_delay_penalty']].head(10).to_dict('records')
+                # Expand top list to 30 for better coverage
+                critical_list = chat_predicted_df[['id', 'name', 'industry_name', 'risk_level', 'risk_score', 'predicted_cost', 'urgent_repair_cost', 'extra_delay_penalty']].head(30).to_dict('records')
+                # Full mapping for all assets so the LLM knows what exists to query via SQL
+                all_assets_mapping = chat_predicted_df[['id', 'name', 'risk_level']].to_dict('records')
             else:
                 critical_list = "No critical assets"
+                all_assets_mapping = []
                 
             active_wos = df_wo[df_wo['status'] == 'in_progress']
             priority_wos = active_wos[active_wos['priority'].isin(['critical', 'high'])]
@@ -1663,7 +1666,8 @@ elif selected == "AI Assistant":
             # Metadata Map (Broad fleet awareness for AI)
             fleet_metadata = {
                 "available_industries": df_assets['industry_name'].unique().tolist(),
-                "available_asset_types": df_assets['asset_type'].unique().tolist()
+                "available_asset_types": df_assets['asset_type'].unique().tolist(),
+                "monitored_assets_mapping": all_assets_mapping # Crucial for SQL generation name matching
             }
             
             # Serialize into payload
