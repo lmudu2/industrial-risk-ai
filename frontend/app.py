@@ -546,7 +546,6 @@ if selected == "Executive Overview":
         "Select Strategic View:", 
         RAW_STRATEGIES, 
         index=RAW_STRATEGIES.index(st.session_state.selected_strategy_key),
-        key="strategy_selector_exec",
         help="All: All Assets | Predictive: AI Risks | Preventive: Scheduled Tasks | Ad-hoc: Unplanned Repairs"
     )
     st.session_state.selected_strategy_key = selected_strategy
@@ -985,7 +984,6 @@ elif selected == "Asset Monitor":
         "Strategic View", 
         STRATEGY_OPTIONS_WITH_COUNTS, 
         index=STRATEGY_OPTIONS_WITH_COUNTS.index(current_strategy_label),
-        key="strategy_selector_monitor",
         help="Filter assets based on maintenance strategy."
     )
     strategy_view = STRATEGY_REVERSE_MAP_WITH_COUNTS[strategy_view_label]
@@ -1042,8 +1040,6 @@ elif selected == "Asset Monitor":
         # Only switch if there's a mismatch and we're not in a manual Ad-hoc state
         if st.session_state.selected_strategy_key != target_strategy and st.session_state.selected_strategy_key != "Ad-hoc / On-demand":
             st.session_state.selected_strategy_key = target_strategy
-            # Explicitly update the widget state to force the UI to refresh with the new selection
-            st.session_state.strategy_selector_monitor = STRATEGY_MAP_WITH_COUNTS[target_strategy]
             st.rerun()
 
     if filtered_assets.empty or asset_id not in filtered_assets["id"].values:
