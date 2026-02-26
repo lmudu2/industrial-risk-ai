@@ -386,7 +386,7 @@ if 'acknowledged_alerts' not in st.session_state:
 # NAVIGATION (TOP BAR)
 # ─────────────────────────────────────────────
 
-options = ["Executive Overview", "Asset Monitor", "Cost Prediction", "AI Assistant"]
+options = ["Top-Down Strategy", "Bottom-Up Diagnostics", "Cost Prediction", "AI Assistant"]
 
 selected = option_menu(
     menu_title=None,
@@ -537,9 +537,9 @@ def show_action_center(active_wo, predicted_critical_df, filtered_assets):
 # SECTION 1: EXECUTIVE OVERVIEW
 # ─────────────────────────────────────────────
 
-if selected == "Executive Overview":
-    # st.markdown("### Predictive Maintenance Control Center")
-    st.markdown("### Asset Risk Analysis for Industrial Machinery")
+if selected == "Top-Down Strategy":
+    st.markdown("### Top-Down Strategy: Fleet Risk Portfolio")
+    st.caption("Strategic analysis of total fleet exposure, ROI opportunities, and critical risk concentrations.")
     
     # ─── STRATEGY VIEW FILTER ───
     selected_strategy = st.selectbox(
@@ -972,9 +972,9 @@ if selected == "Executive Overview":
 
 # ─────────────────────────────────────────────
 
-elif selected == "Asset Monitor":
-    st.markdown("###  AI Diagnostics Engine")
-    st.caption("AI continuously monitors sensor data to detect anomalies, predict component failures, and estimate repair costs — before breakdowns happen.")
+elif selected == "Bottom-Up Diagnostics":
+    st.markdown("### Bottom-Up Diagnostics: Asset Intelligence")
+    st.caption("Granular diagnostic engine providing real-time technical assessment, sensor telemetry, and component-level risk scoring.")
     st.markdown("---")
 
     # ── FILTERS ───────────────────────────────────────────────────────────────
