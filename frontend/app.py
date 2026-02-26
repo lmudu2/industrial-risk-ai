@@ -335,7 +335,7 @@ def batch_predict_assets(filtered_assets):
     return result
 
 # ── STRATEGY STATE INITIALIZATION ──
-RAW_STRATEGIES = ["Holistic", "Predictive", "Preventive", "Ad-hoc / On-demand"]
+RAW_STRATEGIES = ["All", "Predictive", "Preventive", "Ad-hoc / On-demand"]
 
 # Calculate counts for labels (used only in Asset Monitor)
 all_fleet_preds = get_fleet_predictions_v3()
@@ -366,7 +366,7 @@ else:
     count_adhoc = 0
 
 STRATEGY_MAP_WITH_COUNTS = {
-    "Holistic": f"Holistic ({count_holistic})",
+    "All": f"All ({count_holistic})",
     "Predictive": f"Predictive ({count_predictive})",
     "Preventive": f"Preventive ({count_preventive})",
     "Ad-hoc / On-demand": f"Ad-hoc / On-demand ({count_adhoc})"
@@ -375,7 +375,7 @@ STRATEGY_OPTIONS_WITH_COUNTS = list(STRATEGY_MAP_WITH_COUNTS.values())
 STRATEGY_REVERSE_MAP_WITH_COUNTS = {v: k for k, v in STRATEGY_MAP_WITH_COUNTS.items()}
 
 if 'selected_strategy_key' not in st.session_state:
-    st.session_state.selected_strategy_key = "Holistic"
+    st.session_state.selected_strategy_key = "All"
 
 if 'acknowledged_alerts' not in st.session_state:
     st.session_state.acknowledged_alerts = set()
@@ -547,7 +547,7 @@ if selected == "Executive Overview":
         RAW_STRATEGIES, 
         index=RAW_STRATEGIES.index(st.session_state.selected_strategy_key),
         key="strategy_selector_exec",
-        help="Holistic: All Assets | Predictive: AI Risks | Preventive: Scheduled Tasks | Ad-hoc: Unplanned Repairs"
+        help="All: All Assets | Predictive: AI Risks | Preventive: Scheduled Tasks | Ad-hoc: Unplanned Repairs"
     )
     st.session_state.selected_strategy_key = selected_strategy
     
@@ -661,7 +661,7 @@ if selected == "Executive Overview":
     total_spend = filtered_costs['total_cost'].sum()
     
     # ─── CALCULATE AI METRICS ───
-    if selected_strategy == "Holistic":
+    if selected_strategy == "All":
         # Global view: Total exposure including early-stage warnings (everything not healthy)
         risky_assets_df = all_predictions_df[all_predictions_df['risk_level'] != 'Healthy']
         predicted_liability = risky_assets_df['predicted_cost'].sum() if not risky_assets_df.empty else 0
@@ -716,7 +716,7 @@ if selected == "Executive Overview":
     # ─── PROACTIVE KPIs ───
     cols_metrics = st.columns(4)
     
-    view_label = "Total across fleet" if selected_strategy == "Holistic" else f"Scope: {selected_strategy} View"
+    view_label = "Total across fleet" if selected_strategy == "All" else f"Scope: {selected_strategy} View"
     
     if selected_strategy == "Preventive":
         alert_label = "Warning AI Alerts"
@@ -730,7 +730,7 @@ if selected == "Executive Overview":
         alert_label = "Operational Load"
         alert_count = len(filtered_assets)
         alert_sublabel = "Assets requiring emergency care"
-    else: # Holistic
+    else: # All
         alert_label = "Global Risk Count"
         alert_count = len(truly_critical_df)
         warning_count = len(all_predictions_df[all_predictions_df['risk_level'] == 'Warning'])
