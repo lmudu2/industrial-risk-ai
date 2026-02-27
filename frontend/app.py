@@ -1610,83 +1610,72 @@ elif selected == "Cost Prediction":
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
 # ─────────────────────────────────────────────
 
-# Custom CSS to float the native Streamlit popover button and container
+import streamlit.components.v1 as components
+
+# CSS for the popover button styling + chat window
 st.markdown("""
 <style>
-/* 1. Target the specific container wrapping the popover to make it absolute/fixed */
-/* We want to specifically float the popover element itself. Streamlit renders popovers 
-   in a container labeled by `data-testid="stPopover"`. We target the last one on the page
-   assuming it is the chat widget placed at the bottom of the script. 
-*/
-div[data-testid="stPopover"]:last-of-type {
-    position: fixed !important;
-    bottom: 30px !important;
-    right: 30px !important;
-    z-index: 999999 !important;
-}
-
-/* 2. Style the actual popover toggle button to be a circular FAB */
-div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"] {
+/* Style the popover toggle button to be a circular FAB */
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
     width: 60px !important;
     height: 60px !important;
     border-radius: 50% !important;
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
     border: none !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     padding: 0 !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
 }
 
-div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"]:hover {
-    transform: scale(1.05) !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
 }
 
-div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"] p {
-    font-size: 24px !important; /* Make the emoji bigger */
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p {
+    font-size: 26px !important;
     margin: 0 !important;
     padding: 0 !important;
+    line-height: 1 !important;
 }
 
-/* 3. Style the popover content box (the window that opens) */
-/* We target the popover body via Streamlit's global popover class */
+/* Style the popover body (chat window) */
 div[data-testid="stPopoverBody"] {
     width: 400px !important;
     max-width: 90vw !important;
-    height: 500px !important;
-    max-height: 80vh !important;
-    border-radius: 15px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
-    padding: 0 !important; /* Remove default padding so header sits flush */
-    display: flex;
-    flex-direction: column;
+    max-height: 70vh !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    padding: 0 !important;
 }
 
-/* 4. Chat window internal styling */
+/* Chat header */
 .chat-header {
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 15px;
+    padding: 16px 20px;
     font-weight: 600;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    font-size: 15px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Make sure the chat input stays at the bottom of the popover body */
+/* Chat input styling */
 div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
     position: sticky;
     bottom: 0px;
     background: white;
-    padding: 10px;
-    border-top: 1px solid #eee;
-    z-index: 10;
+    padding: 10px 15px;
+    border-top: 1px solid #f0f0f0;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1696,11 +1685,11 @@ with st.popover("💬"):
     st.markdown('''
         <div class="chat-header">
             <span>🤖 AI Maintenance Assistant</span>
-            <span style="font-size: 12px; font-weight: 400; opacity: 0.8;">Always Active</span>
+            <span style="font-size: 11px; font-weight: 400; opacity: 0.8;">Always Active</span>
         </div>
     ''', unsafe_allow_html=True)
     
-    # Message scroll area. Popover body already acts as a scroll container.
+    # Message scroll area
     messages_container = st.container(height=380, border=False)
     
     with messages_container:
@@ -1714,9 +1703,7 @@ with st.popover("💬"):
             
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Call Direct Module (Bypassing HTTP for Cloud Stability)
         try:
-            # Dynamically calculate global site state since UX filters are out of scope
             chat_predicted_assets = batch_predict_assets(df_assets)
             chat_predicted_df = pd.DataFrame(chat_predicted_assets)
             
@@ -1765,3 +1752,64 @@ with st.popover("💬"):
 
         st.session_state.messages.append({"role": "assistant", "content": ai_reply})
         st.rerun()
+
+# JavaScript injection to force the popover element to float at bottom-right
+# This runs in the parent document context and uses MutationObserver
+# to continuously reapply the fixed positioning after Streamlit re-renders.
+components.html("""
+<script>
+(function() {
+    // Access the parent Streamlit document
+    const doc = window.parent.document;
+    
+    function floatPopover() {
+        // Find all stPopover elements and target the last one (our chat widget)
+        const popovers = doc.querySelectorAll('div[data-testid="stPopover"]');
+        if (popovers.length === 0) return;
+        
+        const chatPopover = popovers[popovers.length - 1];
+        
+        // Apply fixed positioning directly as inline styles (overrides everything)
+        chatPopover.style.cssText = `
+            position: fixed !important;
+            bottom: 30px !important;
+            right: 30px !important;
+            z-index: 999999 !important;
+            width: auto !important;
+        `;
+        
+        // Also ensure all ancestor containers don't clip or constrain us
+        let parent = chatPopover.parentElement;
+        let depth = 0;
+        while (parent && depth < 20) {
+            const computedStyle = window.parent.getComputedStyle(parent);
+            if (computedStyle.overflow === 'hidden') {
+                parent.style.overflow = 'visible';
+            }
+            parent = parent.parentElement;
+            depth++;
+        }
+    }
+    
+    // Run immediately
+    floatPopover();
+    
+    // Re-run after short delays to catch Streamlit re-renders
+    setTimeout(floatPopover, 500);
+    setTimeout(floatPopover, 1000);
+    setTimeout(floatPopover, 2000);
+    setTimeout(floatPopover, 3000);
+    
+    // Use MutationObserver to keep reapplying on any DOM change
+    const observer = new MutationObserver(function(mutations) {
+        floatPopover();
+    });
+    
+    observer.observe(doc.body, {
+        childList: true,
+        subtree: true,
+        attributes: true
+    });
+})();
+</script>
+""", height=0, width=0)
