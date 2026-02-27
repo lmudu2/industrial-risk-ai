@@ -1684,11 +1684,11 @@ div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]::after {
 
 /* ── Popover Body (Chat Window) ── */
 div[data-testid="stPopoverBody"] {
-    width: 420px !important;
-    max-width: 92vw !important;
-    max-height: 75vh !important;
-    border-radius: 20px !important;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
+    width: 350px !important;
+    max-width: 85vw !important;
+    max-height: 50vh !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
@@ -1761,7 +1761,7 @@ with st.popover("💬"):
     ''', unsafe_allow_html=True)
     
     # Message scroll area
-    messages_container = st.container(height=380, border=False)
+    messages_container = st.container(height=280, border=False)
     
     with messages_container:
         for message in st.session_state.get("messages", []):
