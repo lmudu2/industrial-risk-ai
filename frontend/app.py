@@ -1753,63 +1753,61 @@ with st.popover("💬"):
         st.session_state.messages.append({"role": "assistant", "content": ai_reply})
         st.rerun()
 
-# JavaScript injection to force the popover element to float at bottom-right
-# This runs in the parent document context and uses MutationObserver
-# to continuously reapply the fixed positioning after Streamlit re-renders.
+# JavaScript injection to force the popover element to float at bottom-right.
+# Uses individual style.setProperty() to avoid destroying Streamlit's styles.
+# MutationObserver is debounced and only watches childList (not attributes).
 components.html("""
 <script>
 (function() {
-    // Access the parent Streamlit document
     const doc = window.parent.document;
+    let debounceTimer = null;
     
     function floatPopover() {
-        // Find all stPopover elements and target the last one (our chat widget)
         const popovers = doc.querySelectorAll('div[data-testid="stPopover"]');
         if (popovers.length === 0) return;
         
         const chatPopover = popovers[popovers.length - 1];
         
-        // Apply fixed positioning directly as inline styles (overrides everything)
-        chatPopover.style.cssText = `
-            position: fixed !important;
-            bottom: 30px !important;
-            right: 30px !important;
-            z-index: 999999 !important;
-            width: auto !important;
-        `;
+        // Use setProperty instead of cssText to preserve Streamlit's existing styles
+        chatPopover.style.setProperty('position', 'fixed', 'important');
+        chatPopover.style.setProperty('bottom', '30px', 'important');
+        chatPopover.style.setProperty('right', '30px', 'important');
+        chatPopover.style.setProperty('z-index', '999999', 'important');
+        chatPopover.style.setProperty('width', 'auto', 'important');
         
-        // Also ensure all ancestor containers don't clip or constrain us
+        // Walk up ancestors and fix any overflow:hidden that clips the fixed element
         let parent = chatPopover.parentElement;
         let depth = 0;
-        while (parent && depth < 20) {
-            const computedStyle = window.parent.getComputedStyle(parent);
-            if (computedStyle.overflow === 'hidden') {
-                parent.style.overflow = 'visible';
+        while (parent && parent !== doc.body && depth < 15) {
+            const cs = window.parent.getComputedStyle(parent);
+            if (cs.overflow === 'hidden' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden') {
+                parent.style.setProperty('overflow', 'visible', 'important');
             }
             parent = parent.parentElement;
             depth++;
         }
     }
     
-    // Run immediately
+    // Run on initial load with staggered delays
     floatPopover();
-    
-    // Re-run after short delays to catch Streamlit re-renders
-    setTimeout(floatPopover, 500);
-    setTimeout(floatPopover, 1000);
-    setTimeout(floatPopover, 2000);
+    setTimeout(floatPopover, 300);
+    setTimeout(floatPopover, 800);
+    setTimeout(floatPopover, 1500);
     setTimeout(floatPopover, 3000);
     
-    // Use MutationObserver to keep reapplying on any DOM change
-    const observer = new MutationObserver(function(mutations) {
-        floatPopover();
+    // Debounced MutationObserver - only watches childList (NOT attributes)
+    // This prevents infinite loops when we modify styles
+    const observer = new MutationObserver(function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(floatPopover, 100);
     });
     
     observer.observe(doc.body, {
         childList: true,
-        subtree: true,
-        attributes: true
+        subtree: true
+        // NO attributes: true — that would cause infinite loops
     });
 })();
 </script>
 """, height=0, width=0)
+
