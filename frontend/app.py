@@ -1617,54 +1617,66 @@ st.markdown("""
 <style>
 /* ── Pulse glow animation for the FAB ── */
 @keyframes pulseGlow {
-    0% { box-shadow: 0 4px 12px rgba(219, 112, 147, 0.2); }
-    50% { box-shadow: 0 4px 20px rgba(219, 112, 147, 0.4), 0 0 30px rgba(219, 112, 147, 0.15); }
-    100% { box-shadow: 0 4px 12px rgba(219, 112, 147, 0.2); }
+    0% { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+    50% { box-shadow: 0 4px 22px rgba(37, 99, 235, 0.5), 0 0 30px rgba(37, 99, 235, 0.15); }
+    100% { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 }
 
-/* ── Circular FAB Button (Velaro Style) ── */
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
-    width: 60px !important;
-    height: 60px !important;
+/* ── Circular FAB Button (Blue Theme) ── */
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"],
+div[data-testid="stPopover"] button[kind="secondary"] {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
     border-radius: 50% !important;
-    background: white !important;
-    color: transparent !important;
-    border: 2.5px solid #e8a0b5 !important;
+    -webkit-border-radius: 50% !important;
+    overflow: hidden !important;
+    background: #2563eb !important;
+    color: white !important;
+    border: none !important;
     animation: pulseGlow 3s ease-in-out infinite !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     padding: 0 !important;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     cursor: pointer !important;
     position: relative !important;
-    /* Teal chat bubble SVG icon */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23008080'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 15.17L18.83 16H4V4h16v13.17zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z'/%3E%3C/svg%3E") !important;
+    /* White chat bubble SVG icon */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 15.17L18.83 16H4V4h16v13.17zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
-    background-size: 28px 28px !important;
+    background-size: 26px 26px !important;
 }
 
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover {
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover,
+div[data-testid="stPopover"] button[kind="secondary"]:hover {
     transform: scale(1.1) !important;
     animation: none !important;
-    box-shadow: 0 6px 25px rgba(219, 112, 147, 0.45) !important;
-    border-color: #d4869e !important;
+    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5) !important;
+    background: #1d4ed8 !important;
 }
 
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active {
     transform: scale(0.95) !important;
 }
 
-/* Hide the label text completely */
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p {
+/* Hide any label/icon text inside the button */
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p,
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] span,
+div[data-testid="stPopover"] button[kind="secondary"] p,
+div[data-testid="stPopover"] button[kind="secondary"] span {
     font-size: 0px !important;
     margin: 0 !important;
     padding: 0 !important;
     line-height: 0 !important;
     visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 /* ── Red Notification Badge ── */
