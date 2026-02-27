@@ -1607,10 +1607,6 @@ elif selected == "Cost Prediction":
                             st.success(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ✅ Standard maintenance parameters.")
 
 # ─────────────────────────────────────────────
-# SECTION 4: AI ASSISTANT
-# ─────────────────────────────────────────────
-
-# ─────────────────────────────────────────────
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
 # ─────────────────────────────────────────────
 
@@ -1618,17 +1614,19 @@ elif selected == "Cost Prediction":
 st.markdown("""
 <style>
 /* 1. Target the specific container wrapping the popover to make it absolute/fixed */
-/* Streamlit puts the popover button in a standard element block. We need to catch it. */
-/* To isolate our popover, we wrap it in a container and target stPopover inside it */
-div.floating-chat-container {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 999999;
+/* We want to specifically float the popover element itself. Streamlit renders popovers 
+   in a container labeled by `data-testid="stPopover"`. We target the last one on the page
+   assuming it is the chat widget placed at the bottom of the script. 
+*/
+div[data-testid="stPopover"]:last-of-type {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    z-index: 999999 !important;
 }
 
 /* 2. Style the actual popover toggle button to be a circular FAB */
-div.floating-chat-container button[data-testid="baseButton-secondary"] {
+div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"] {
     width: 60px !important;
     height: 60px !important;
     border-radius: 50% !important;
@@ -1643,12 +1641,12 @@ div.floating-chat-container button[data-testid="baseButton-secondary"] {
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-div.floating-chat-container button[data-testid="baseButton-secondary"]:hover {
+div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"]:hover {
     transform: scale(1.05) !important;
     box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
 }
 
-div.floating-chat-container button[data-testid="baseButton-secondary"] p {
+div[data-testid="stPopover"]:last-of-type button[data-testid="baseButton-secondary"] p {
     font-size: 24px !important; /* Make the emoji bigger */
     margin: 0 !important;
     padding: 0 !important;
@@ -1692,11 +1690,6 @@ div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
 }
 </style>
 """, unsafe_allow_html=True)
-
-# Master Container for the Persistent Widget
-# We use a custom HTML block to create the wrapper class since Streamlit containers
-# don't allow setting custom classes directly.
-st.markdown('<div class="floating-chat-container">', unsafe_allow_html=True)
 
 # The native popover button acting as the circular Chat Icon
 with st.popover("💬"):
@@ -1772,5 +1765,3 @@ with st.popover("💬"):
 
         st.session_state.messages.append({"role": "assistant", "content": ai_reply})
         st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
