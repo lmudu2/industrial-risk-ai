@@ -389,12 +389,12 @@ if 'acknowledged_alerts' not in st.session_state:
 # NAVIGATION (TOP BAR)
 # ─────────────────────────────────────────────
 
-options = ["Executive Overview", "Asset Monitor", "Cost Prediction"]
+options = ["Executive Overview", "Asset Monitor", "Cost Analysis"]
 
 selected = option_menu(
     menu_title=None,
     options=options,
-    icons=["bar-chart-fill", "activity", "cpu"],
+    icons=["bar-chart-fill", "activity", "cash-coin"],
     default_index=0,
     orientation="horizontal",
     key="main_navigation_menu",
@@ -1485,126 +1485,275 @@ elif selected == "Asset Monitor":
 # SECTION 3: PREDICTIVE LAB
 # ─────────────────────────────────────────────
 
-elif selected == "Cost Prediction":
-    st.markdown("### Preventive Cost Simulator")
+elif selected == "Cost Analysis":
     
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
+    tab_hist, tab_pred = st.tabs(["📊 Historical Expenses", "🔮 Cost Prediction"])
+    
+    # ─────────────────────────────────────
+    # TAB 1: HISTORICAL EXPENSES
+    # ─────────────────────────────────────
+    with tab_hist:
+        st.markdown("### Historical Expense Analysis")
+        st.caption("Comprehensive view of maintenance spending, labor allocation, and vendor involvement across your asset fleet.")
         
-        with c1:
-            st.markdown("##### Scenario Configuration")
-            st.caption("Simulate the cost difference between **Planned Maintenance** vs. **Emergency Repairs**:")
-            
-            # Priority (Hypothetical)
-            priority_options = ["low", "medium", "high", "critical"]
-            priority_labels = {
-                "low": "Planned (Low Urgency)",
-                "medium": "Standard Repair",
-                "high": "Urgent Response",
-                "critical": "🚨 Emergency"
-            }
-            
-            priority_display = st.select_slider(
-                "Urgency of Repair", 
-                options=priority_options,
-                value="medium",
-                format_func=lambda x: priority_labels[x],
-                help="Emergency repairs cost 3x more due to overtime and expedited shipping."
+        # Build joined dataset: costs → work_orders → assets
+        if not df_costs.empty and not df_wo.empty:
+            cost_detail = df_costs.merge(
+                df_wo[['id', 'asset_id', 'title', 'priority', 'status', 'assigned_to']], 
+                left_on='work_order_id', right_on='id', how='left', suffixes=('', '_wo')
+            )
+            cost_detail = cost_detail.merge(
+                df_assets[['id', 'name', 'asset_type', 'industry_name', 'location']], 
+                left_on='asset_id', right_on='id', how='left', suffixes=('', '_asset')
             )
             
-            # Age (Years -> Days)
-            age_years = st.slider(
-                "Asset Age (Years)", 
-                min_value=0.0, max_value=20.0, value=3.0, step=0.5,
-                help="Older assets require more expensive parts."
+            # ── KPI ROW ──
+            total_spend = cost_detail['total_cost'].sum()
+            total_labor = cost_detail['labor_cost'].sum()
+            total_parts = cost_detail['parts_cost'].sum()
+            total_hours = cost_detail['labor_hours'].sum()
+            unique_techs = cost_detail['technician_name'].nunique()
+            avg_cost_per_wo = cost_detail['total_cost'].mean()
+            unique_industries = cost_detail['industry_name'].nunique()
+            
+            k1, k2, k3, k4 = st.columns(4)
+            k1.metric("💰 Total Spend", f"${total_spend:,.0f}")
+            k2.metric("🔧 Labor Cost", f"${total_labor:,.0f}", f"{(total_labor/total_spend*100):.0f}% of total" if total_spend > 0 else None)
+            k3.metric("🏭 Parts Cost", f"${total_parts:,.0f}", f"{(total_parts/total_spend*100):.0f}% of total" if total_spend > 0 else None)
+            k4.metric("⏱️ Total Labor Hours", f"{total_hours:,.0f}h", f"{unique_techs} technicians")
+            
+            st.markdown("---")
+            
+            # ── BUDGET vs SPENDING ──
+            col_budget, col_industry = st.columns(2)
+            
+            with col_budget:
+                st.markdown("##### 📈 Spending by Priority")
+                priority_spend = cost_detail.groupby('priority').agg(
+                    total=('total_cost', 'sum'),
+                    count=('total_cost', 'count'),
+                    avg=('total_cost', 'mean')
+                ).reset_index()
+                priority_spend.columns = ['Priority', 'Total Spend ($)', 'Work Orders', 'Avg Cost ($)']
+                priority_order = ['critical', 'high', 'medium', 'low']
+                priority_spend['Priority'] = pd.Categorical(priority_spend['Priority'], categories=priority_order, ordered=True)
+                priority_spend = priority_spend.sort_values('Priority')
+                
+                # Bar chart
+                chart_data = priority_spend.set_index('Priority')[['Total Spend ($)']]
+                st.bar_chart(chart_data, color="#2563eb")
+                
+                st.dataframe(
+                    priority_spend.style.format({
+                        'Total Spend ($)': '${:,.0f}',
+                        'Avg Cost ($)': '${:,.0f}'
+                    }),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            
+            with col_industry:
+                st.markdown("##### 🏢 Spending by Industry / Company")
+                industry_spend = cost_detail.groupby('industry_name').agg(
+                    total=('total_cost', 'sum'),
+                    labor=('labor_cost', 'sum'),
+                    parts=('parts_cost', 'sum'),
+                    work_orders=('total_cost', 'count'),
+                    assets=('asset_id', 'nunique')
+                ).reset_index()
+                industry_spend.columns = ['Industry', 'Total Spend ($)', 'Labor ($)', 'Parts ($)', 'Work Orders', 'Assets']
+                industry_spend = industry_spend.sort_values('Total Spend ($)', ascending=False)
+                
+                chart_data_ind = industry_spend.set_index('Industry')[['Total Spend ($)']]
+                st.bar_chart(chart_data_ind, color="#10b981")
+                
+                st.dataframe(
+                    industry_spend.style.format({
+                        'Total Spend ($)': '${:,.0f}',
+                        'Labor ($)': '${:,.0f}',
+                        'Parts ($)': '${:,.0f}'
+                    }),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            
+            st.markdown("---")
+            
+            # ── COST BREAKDOWN BY ASSET ──
+            st.markdown("##### 🏗️ Cost Breakdown by Asset")
+            asset_spend = cost_detail.groupby(['name', 'asset_type', 'industry_name']).agg(
+                total=('total_cost', 'sum'),
+                labor=('labor_cost', 'sum'),
+                parts=('parts_cost', 'sum'),
+                other=('other_cost', 'sum'),
+                hours=('labor_hours', 'sum'),
+                work_orders=('total_cost', 'count')
+            ).reset_index()
+            asset_spend.columns = ['Asset Name', 'Asset Type', 'Industry', 'Total Cost ($)', 'Labor ($)', 'Parts ($)', 'Other ($)', 'Labor Hours', 'Work Orders']
+            asset_spend = asset_spend.sort_values('Total Cost ($)', ascending=False)
+            
+            st.dataframe(
+                asset_spend.head(20).style.format({
+                    'Total Cost ($)': '${:,.0f}',
+                    'Labor ($)': '${:,.0f}',
+                    'Parts ($)': '${:,.0f}',
+                    'Other ($)': '${:,.0f}',
+                    'Labor Hours': '{:,.1f}'
+                }),
+                use_container_width=True,
+                hide_index=True
             )
-            age_days = int(age_years * 365)
             
-            # Complexity (Scale 1-10 -> Description Length)
-            complexity_scale = st.slider(
-                "Repair Complexity (Scale 1-10)", 
-                min_value=1, max_value=10, value=3,
-                help="1 = Simple filter change. 10 = Complete engine overhaul."
-            )
-            # Map 1-10 scale to description length (proxy for complexity in model)
-            # 1 -> 10 chars, 10 -> 200 chars
-            complexity_len = int(np.interp(complexity_scale, [1, 10], [10, 200]))
+            st.markdown("---")
             
-            asset_type = st.selectbox("Asset Class", df_assets['asset_type'].unique())
+            # ── LABOR ANALYSIS ──
+            col_labor, col_trend = st.columns(2)
             
-            is_warranty_active = st.toggle("Asset Under Active Warranty", value=False)
+            with col_labor:
+                st.markdown("##### 👷 Labor & Technician Analysis")
+                tech_analysis = cost_detail.groupby(['technician_name', 'technician_skill_level']).agg(
+                    total_hours=('labor_hours', 'sum'),
+                    total_labor_cost=('labor_cost', 'sum'),
+                    jobs=('total_cost', 'count'),
+                    avg_rate=('technician_hourly_rate', 'mean')
+                ).reset_index()
+                tech_analysis.columns = ['Technician', 'Skill Level', 'Hours Worked', 'Labor Cost ($)', 'Jobs Completed', 'Avg Rate ($/hr)']
+                tech_analysis = tech_analysis.sort_values('Hours Worked', ascending=False)
+                
+                st.dataframe(
+                    tech_analysis.head(15).style.format({
+                        'Hours Worked': '{:,.1f}',
+                        'Labor Cost ($)': '${:,.0f}',
+                        'Avg Rate ($/hr)': '${:,.0f}'
+                    }),
+                    use_container_width=True,
+                    hide_index=True
+                )
             
-        with c2:
-            st.markdown("##### AI Cost Prediction")
-            st.caption("Estimated bill based on historical invoice data:")
-            
-            if st.button("Calculate Impact", type="primary"):
-                # Predict
-                if cost_model:
-                    input_df = pd.DataFrame([{
-                        'priority': priority_display, # Use the raw value (low/med/high)
-                        'asset_type': asset_type,
-                        'industry': "Manufacturing", # default baseline
-                        'asset_age_days': age_days,
-                        'description_len': complexity_len
-                    }])
-                    pred_cost = float(np.expm1(cost_model.predict(input_df)[0]))
+            with col_trend:
+                st.markdown("##### 📅 Monthly Spending Trend")
+                if 'created_at' in cost_detail.columns:
+                    cost_detail['month'] = pd.to_datetime(cost_detail['created_at']).dt.to_period('M').astype(str)
+                    monthly_trend = cost_detail.groupby('month').agg(
+                        total=('total_cost', 'sum'),
+                        labor=('labor_cost', 'sum'),
+                        parts=('parts_cost', 'sum')
+                    ).reset_index()
+                    monthly_trend.columns = ['Month', 'Total', 'Labor', 'Parts']
+                    monthly_trend = monthly_trend.sort_values('Month')
                     
-                    # ---------------------------------------------------------
-                    # NEW: Calculate Real Math (Stop AI Hallucinations)
-                    # ---------------------------------------------------------
-                    purchase_price = {
-                        "Robotic Arm": 150000,
-                        "Conveyor System": 85000,
-                        "Centrifuge": 250000,
-                        "Industrial Boiler": 120000,
-                        "Delivery Truck": 65000,
-                        "Wind Turbine": 2000000,
-                        "CNC Machine": 180000
-                    }.get(asset_type, 100000) # Default baseline
-                    
-                    useful_life_years = 15.0
-                    # Straight-line depreciation, floor at 10% salvage value
-                    residual_value = max(purchase_price * 0.10, purchase_price * (1.0 - (age_years / useful_life_years)))
-                    repair_ratio = (pred_cost / residual_value) * 100
-                    
-                    if is_warranty_active:
-                        pred_cost = 0.0
-                        repair_ratio = 0.0
+                    chart_trend = monthly_trend.set_index('Month')[['Total', 'Labor', 'Parts']]
+                    st.line_chart(chart_trend)
+                else:
+                    st.info("No date data available for trend analysis.")
+        else:
+            st.warning("⚠️ No historical cost data available. Cost records will appear here once work orders generate expenses.")
+    
+    # ─────────────────────────────────────
+    # TAB 2: COST PREDICTION (existing)
+    # ─────────────────────────────────────
+    with tab_pred:
+        st.markdown("### Preventive Cost Simulator")
+        
+        with st.container(border=True):
+            c1, c2 = st.columns(2)
+            
+            with c1:
+                st.markdown("##### Scenario Configuration")
+                st.caption("Simulate the cost difference between **Planned Maintenance** vs. **Emergency Repairs**:")
+                
+                priority_options = ["low", "medium", "high", "critical"]
+                priority_labels = {
+                    "low": "Planned (Low Urgency)",
+                    "medium": "Standard Repair",
+                    "high": "Urgent Response",
+                    "critical": "🚨 Emergency"
+                }
+                
+                priority_display = st.select_slider(
+                    "Urgency of Repair", 
+                    options=priority_options,
+                    value="medium",
+                    format_func=lambda x: priority_labels[x],
+                    help="Emergency repairs cost 3x more due to overtime and expedited shipping."
+                )
+                
+                age_years = st.slider(
+                    "Asset Age (Years)", 
+                    min_value=0.0, max_value=20.0, value=3.0, step=0.5,
+                    help="Older assets require more expensive parts."
+                )
+                age_days = int(age_years * 365)
+                
+                complexity_scale = st.slider(
+                    "Repair Complexity (Scale 1-10)", 
+                    min_value=1, max_value=10, value=3,
+                    help="1 = Simple filter change. 10 = Complete engine overhaul."
+                )
+                complexity_len = int(np.interp(complexity_scale, [1, 10], [10, 200]))
+                
+                asset_type = st.selectbox("Asset Class", df_assets['asset_type'].unique())
+                
+                is_warranty_active = st.toggle("Asset Under Active Warranty", value=False)
+                
+            with c2:
+                st.markdown("##### AI Cost Prediction")
+                st.caption("Estimated bill based on historical invoice data:")
+                
+                if st.button("Calculate Impact", type="primary"):
+                    if cost_model:
+                        input_df = pd.DataFrame([{
+                            'priority': priority_display,
+                            'asset_type': asset_type,
+                            'industry': "Manufacturing",
+                            'asset_age_days': age_days,
+                            'description_len': complexity_len
+                        }])
+                        pred_cost = float(np.expm1(cost_model.predict(input_df)[0]))
                         
-                        # Apply 85% discount for parts coverage; remaining 15% covers labor, logistics, and downtime
-                        pred_cost = pred_cost * 0.15
-                        repair_ratio = (pred_cost / residual_value) * 100 if residual_value > 0 else 0
+                        purchase_price = {
+                            "Robotic Arm": 150000,
+                            "Conveyor System": 85000,
+                            "Centrifuge": 250000,
+                            "Industrial Boiler": 120000,
+                            "Delivery Truck": 65000,
+                            "Wind Turbine": 2000000,
+                            "CNC Machine": 180000
+                        }.get(asset_type, 100000)
                         
-                    st.metric("Estimated Cost Impact (Discounted)", f"${pred_cost:,.2f}")
-                    
-                    # ---------------------------------------------------------
-                    # NEW: AI STRATEGIC ADVICE (LLM)
-                    # ---------------------------------------------------------
-                    with st.spinner("Analyzing repair vs. replace strategy..."):
-                        advice_data = {
-                            "asset_type": asset_type,
-                            "age_years": age_years,
-                            "predicted_cost": pred_cost,
-                            "residual_value": residual_value,
-                            "repair_ratio": repair_ratio,
-                            "under_warranty": is_warranty_active,
-                            "priority": priority_labels[priority_display], 
-                            "complexity": complexity_scale
-                        }
-                        recommendation = cached_get_maintenance_recommendation(advice_data)
+                        useful_life_years = 15.0
+                        residual_value = max(purchase_price * 0.10, purchase_price * (1.0 - (age_years / useful_life_years)))
+                        repair_ratio = (pred_cost / residual_value) * 100
                         
-                        # Final Display: Combine LLM Advice + System Insight
+                        if is_warranty_active:
+                            pred_cost = 0.0
+                            repair_ratio = 0.0
+                            pred_cost = pred_cost * 0.15
+                            repair_ratio = (pred_cost / residual_value) * 100 if residual_value > 0 else 0
+                            
+                        st.metric("Estimated Cost Impact (Discounted)", f"${pred_cost:,.2f}")
                         
-                        # Insight Logic determining Color & Context
-                        if priority_display == "critical":
-                            st.error(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ CRITICAL PRIORITY increases labor costs by ~300%.")
-                        elif age_years > 8:
-                            st.warning(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ High asset age (>8yr) correlates with 20% higher parts costs.")
-                        elif complexity_scale > 7:
-                            st.info(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ℹ️ High complexity suggests specialized labor.")
-                        else:
-                            st.success(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ✅ Standard maintenance parameters.")
+                        with st.spinner("Analyzing repair vs. replace strategy..."):
+                            advice_data = {
+                                "asset_type": asset_type,
+                                "age_years": age_years,
+                                "predicted_cost": pred_cost,
+                                "residual_value": residual_value,
+                                "repair_ratio": repair_ratio,
+                                "under_warranty": is_warranty_active,
+                                "priority": priority_labels[priority_display], 
+                                "complexity": complexity_scale
+                            }
+                            recommendation = cached_get_maintenance_recommendation(advice_data)
+                            
+                            if priority_display == "critical":
+                                st.error(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ CRITICAL PRIORITY increases labor costs by ~300%.")
+                            elif age_years > 8:
+                                st.warning(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ High asset age (>8yr) correlates with 20% higher parts costs.")
+                            elif complexity_scale > 7:
+                                st.info(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ℹ️ High complexity suggests specialized labor.")
+                            else:
+                                st.success(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ✅ Standard maintenance parameters.")
 
 # ─────────────────────────────────────────────
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
