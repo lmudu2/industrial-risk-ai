@@ -1693,28 +1693,41 @@ div[data-testid="stPopoverBody"] {
     overflow: hidden !important;
 }
 
+/* Kill internal Streamlit padding wrappers */
+div[data-testid="stPopoverBody"] > div {
+    padding: 0 !important;
+}
+
+div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+
 /* ── Chat Header ── */
 .chat-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 18px 22px;
+    padding: 14px 18px;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin: -1rem -1rem 0.5rem -1rem !important; /* Counteract any Streamlit internal padding */
+    padding-left: calc(1rem + 18px) !important;
+    padding-right: calc(1rem + 18px) !important;
+    width: calc(100% + 2rem) !important;
 }
 
 .chat-header .header-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .chat-header .status-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background: #4ade80;
     border-radius: 50%;
     display: inline-block;
@@ -1728,12 +1741,11 @@ div[data-testid="stPopoverBody"] {
 }
 
 .chat-header .status-badge {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
-    background: rgba(255,255,255,0.15);
-    padding: 4px 10px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.2);
+    padding: 3px 8px;
+    border-radius: 10px;
     letter-spacing: 0.3px;
 }
 
@@ -1742,7 +1754,7 @@ div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
     position: sticky;
     bottom: 0px;
     background: white;
-    padding: 12px 16px;
+    padding: 10px 12px;
     border-top: 1px solid #f0f0f0;
 }
 </style>
