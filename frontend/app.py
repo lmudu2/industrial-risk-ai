@@ -1690,10 +1690,10 @@ div[data-testid="stPopoverBody"] {
     border-radius: 16px !important;
     box-shadow: 0 15px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: auto !important;
 }
 
-/* Kill internal Streamlit padding wrappers */
+/* Kill internal Streamlit padding wrappers inside popover */
 div[data-testid="stPopoverBody"] > div {
     padding: 0 !important;
 }
@@ -1713,10 +1713,7 @@ div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(255,255,255,0.1);
-    margin: -1rem -1rem 0.5rem -1rem !important; /* Counteract any Streamlit internal padding */
-    padding-left: calc(1rem + 18px) !important;
-    padding-right: calc(1rem + 18px) !important;
-    width: calc(100% + 2rem) !important;
+    border-radius: 0;
 }
 
 .chat-header .header-left {
@@ -1761,7 +1758,7 @@ div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
 """, unsafe_allow_html=True)
 
 # The native popover button acting as the circular Chat Icon
-with st.popover("💬"):
+with st.popover("", icon=":material/chat:"):
     st.markdown('''
         <div class="chat-header">
             <div class="header-left">
@@ -1773,7 +1770,7 @@ with st.popover("💬"):
     ''', unsafe_allow_html=True)
     
     # Message scroll area
-    messages_container = st.container(height=280, border=False)
+    messages_container = st.container(height=200, border=False)
     
     with messages_container:
         for message in st.session_state.get("messages", []):
