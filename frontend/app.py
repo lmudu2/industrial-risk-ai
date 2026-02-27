@@ -1763,7 +1763,7 @@ with st.popover("", icon=":material/chat:"):
         <div class="chat-header">
             <div class="header-left">
                 <span class="status-dot"></span>
-                <span>🤖 AI Maintenance Assistant</span>
+                <span>AI Maintenance Assistant</span>
             </div>
             <span class="status-badge">Online</span>
         </div>
