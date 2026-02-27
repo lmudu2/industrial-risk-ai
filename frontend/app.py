@@ -1615,66 +1615,112 @@ import streamlit.components.v1 as components
 # CSS for the popover button styling + chat window
 st.markdown("""
 <style>
-/* Style the popover toggle button to be a circular FAB */
+/* ── Pulse glow animation for the FAB ── */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+    50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.7), 0 0 40px rgba(118, 75, 162, 0.3); }
+    100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+}
+
+/* ── Circular FAB Button ── */
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
-    width: 60px !important;
-    height: 60px !important;
+    width: 64px !important;
+    height: 64px !important;
     border-radius: 50% !important;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
-    border: none !important;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+    border: 3px solid rgba(255,255,255,0.3) !important;
+    animation: pulseGlow 2.5s ease-in-out infinite !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     padding: 0 !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    cursor: pointer !important;
 }
 
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6) !important;
+    transform: scale(1.15) rotate(10deg) !important;
+    animation: none !important;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7) !important;
+    border-color: rgba(255,255,255,0.6) !important;
+}
+
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active {
+    transform: scale(0.95) !important;
 }
 
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p {
-    font-size: 26px !important;
+    font-size: 28px !important;
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1 !important;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)) !important;
 }
 
-/* Style the popover body (chat window) */
+/* ── Popover Body (Chat Window) ── */
 div[data-testid="stPopoverBody"] {
-    width: 400px !important;
-    max-width: 90vw !important;
-    max-height: 70vh !important;
-    border-radius: 16px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    width: 420px !important;
+    max-width: 92vw !important;
+    max-height: 75vh !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
     padding: 0 !important;
+    overflow: hidden !important;
 }
 
-/* Chat header */
+/* ── Chat Header ── */
 .chat-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 16px 20px;
+    padding: 18px 22px;
     font-weight: 600;
     font-size: 15px;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Chat input styling */
+.chat-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-header .status-dot {
+    width: 10px;
+    height: 10px;
+    background: #4ade80;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.chat-header .status-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    letter-spacing: 0.3px;
+}
+
+/* ── Chat Input ── */
 div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
     position: sticky;
     bottom: 0px;
     background: white;
-    padding: 10px 15px;
+    padding: 12px 16px;
     border-top: 1px solid #f0f0f0;
 }
 </style>
@@ -1684,8 +1730,11 @@ div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
 with st.popover("💬"):
     st.markdown('''
         <div class="chat-header">
-            <span>🤖 AI Maintenance Assistant</span>
-            <span style="font-size: 11px; font-weight: 400; opacity: 0.8;">Always Active</span>
+            <div class="header-left">
+                <span class="status-dot"></span>
+                <span>🤖 AI Maintenance Assistant</span>
+            </div>
+            <span class="status-badge">Online</span>
         </div>
     ''', unsafe_allow_html=True)
     
@@ -1697,6 +1746,7 @@ with st.popover("💬"):
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
     
+
     if prompt := st.chat_input("Ask about assets, costs, or maintenance logs..."):
         if "messages" not in st.session_state:
             st.session_state.messages = []
