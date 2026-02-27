@@ -1507,7 +1507,35 @@ elif selected == "Cost Analysis":
                 left_on='asset_id', right_on='id', how='left', suffixes=('', '_asset')
             )
             
-            # ── KPI ROW ──
+            # ── ASSET FILTER ──
+            filter_col1, filter_col2 = st.columns(2)
+            with filter_col1:
+                asset_type_filter = st.selectbox(
+                    "Filter by Asset Type", 
+                    options=["All Types"] + sorted(cost_detail['asset_type'].dropna().unique().tolist()),
+                    key="hist_asset_type_filter"
+                )
+            with filter_col2:
+                if asset_type_filter != "All Types":
+                    available_assets = sorted(cost_detail[cost_detail['asset_type'] == asset_type_filter]['name'].dropna().unique().tolist())
+                else:
+                    available_assets = sorted(cost_detail['name'].dropna().unique().tolist())
+                
+                selected_assets = st.multiselect(
+                    "Select Assets",
+                    options=available_assets,
+                    default=[],
+                    placeholder="All Assets",
+                    key="hist_asset_filter"
+                )
+            
+            # Apply filters
+            if asset_type_filter != "All Types":
+                cost_detail = cost_detail[cost_detail['asset_type'] == asset_type_filter]
+            if selected_assets:
+                cost_detail = cost_detail[cost_detail['name'].isin(selected_assets)]
+            
+            st.markdown("---")
             total_spend = cost_detail['total_cost'].sum()
             total_labor = cost_detail['labor_cost'].sum()
             total_parts = cost_detail['parts_cost'].sum()
