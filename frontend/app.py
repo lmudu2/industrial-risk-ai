@@ -32,9 +32,12 @@ try:
 
     # Streamlit Cloud Secret Mapping
     if hasattr(st, "secrets"):
-        for key, value in st.secrets.items():
-            if key not in os.environ:
-                os.environ[key] = str(value)
+        try:
+            for key, value in st.secrets.items():
+                if key not in os.environ:
+                    os.environ[key] = str(value)
+        except Exception:
+            pass # Ignore if secrets are not available locally
 
     # Add backend, ml, and data to path
     CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -386,7 +389,7 @@ if 'acknowledged_alerts' not in st.session_state:
 # NAVIGATION (TOP BAR)
 # ─────────────────────────────────────────────
 
-options = ["Executive Overview", "Asset Monitor", "Cost Prediction", "AI Assistant"]
+options = ["Executive Overview", "Asset Monitor", "Cost Prediction"]
 
 selected = option_menu(
     menu_title=None,
@@ -1607,39 +1610,128 @@ elif selected == "Cost Prediction":
 # SECTION 4: AI ASSISTANT
 # ─────────────────────────────────────────────
 
-elif selected == "AI Assistant":
-    st.markdown("### Intelligent Maintenance Assistant")
-    
-    # Chat Interface
-    for message in st.session_state.get("messages", []):
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# ─────────────────────────────────────────────
+# SECTION 4: PERSISTENT AI ASSISTANT WIDGET
+# ─────────────────────────────────────────────
 
+# Custom CSS to float the native Streamlit popover button and container
+st.markdown("""
+<style>
+/* 1. Target the specific container wrapping the popover to make it absolute/fixed */
+/* Streamlit puts the popover button in a standard element block. We need to catch it. */
+/* To isolate our popover, we wrap it in a container and target stPopover inside it */
+div.floating-chat-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999999;
+}
+
+/* 2. Style the actual popover toggle button to be a circular FAB */
+div.floating-chat-container button[data-testid="baseButton-secondary"] {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+div.floating-chat-container button[data-testid="baseButton-secondary"]:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+div.floating-chat-container button[data-testid="baseButton-secondary"] p {
+    font-size: 24px !important; /* Make the emoji bigger */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 3. Style the popover content box (the window that opens) */
+/* We target the popover body via Streamlit's global popover class */
+div[data-testid="stPopoverBody"] {
+    width: 400px !important;
+    max-width: 90vw !important;
+    height: 500px !important;
+    max-height: 80vh !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    padding: 0 !important; /* Remove default padding so header sits flush */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 4. Chat window internal styling */
+.chat-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 15px;
+    font-weight: 600;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Make sure the chat input stays at the bottom of the popover body */
+div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
+    position: sticky;
+    bottom: 0px;
+    background: white;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    z-index: 10;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Master Container for the Persistent Widget
+# We use a custom HTML block to create the wrapper class since Streamlit containers
+# don't allow setting custom classes directly.
+st.markdown('<div class="floating-chat-container">', unsafe_allow_html=True)
+
+# The native popover button acting as the circular Chat Icon
+with st.popover("💬"):
+    st.markdown('''
+        <div class="chat-header">
+            <span>🤖 AI Maintenance Assistant</span>
+            <span style="font-size: 12px; font-weight: 400; opacity: 0.8;">Always Active</span>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # Message scroll area. Popover body already acts as a scroll container.
+    messages_container = st.container(height=380, border=False)
+    
+    with messages_container:
+        for message in st.session_state.get("messages", []):
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+    
     if prompt := st.chat_input("Ask about assets, costs, or maintenance logs..."):
         if "messages" not in st.session_state:
             st.session_state.messages = []
             
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Call Direct Module (Fixed: Bypassing HTTP for Cloud Stability)
+        
+        # Call Direct Module (Bypassing HTTP for Cloud Stability)
         try:
-            
             # Dynamically calculate global site state since UX filters are out of scope
             chat_predicted_assets = batch_predict_assets(df_assets)
             chat_predicted_df = pd.DataFrame(chat_predicted_assets)
             
             if not chat_predicted_df.empty:
                 chat_predicted_df = chat_predicted_df.sort_values('risk_score', ascending=False)
-                
-                # Natively calculate explicitly labeled cost parameters so the AI doesn't have to guess or run SQL math.
                 chat_predicted_df['urgent_repair_cost'] = chat_predicted_df['predicted_cost'] * 0.40
                 chat_predicted_df['extra_delay_penalty'] = chat_predicted_df['predicted_cost'] * 0.60
-                
-                # Expand top list to 30 for better coverage
                 critical_list = chat_predicted_df[['id', 'name', 'industry_name', 'risk_level', 'risk_score', 'predicted_cost', 'urgent_repair_cost', 'extra_delay_penalty']].head(30).to_dict('records')
-                # Full mapping for all assets so the LLM knows what exists to query via SQL
                 all_assets_mapping = chat_predicted_df[['id', 'name', 'risk_level']].to_dict('records')
             else:
                 critical_list = "No critical assets"
@@ -1648,29 +1740,21 @@ elif selected == "AI Assistant":
             active_wos = df_wo[df_wo['status'] == 'in_progress']
             priority_wos = active_wos[active_wos['priority'].isin(['critical', 'high'])]
             priority_wos = priority_wos.sort_values(by=['priority', 'created_at'], ascending=[True, False]).head(15)
-            
-            # Serialize for the LLM
             active_wos_list = priority_wos[['id', 'asset_id', 'title', 'priority', 'status', 'assigned_to']].to_dict('records')
             
-            # Calculate Metrics for Chat Context (Strategy-Specific)
             chat_liability = chat_predicted_df['predicted_cost'].sum() if not chat_predicted_df.empty else 0
             chat_savings = chat_liability * 0.60
-            
-            # Sub-segment savings
             predictive_df = chat_predicted_df[chat_predicted_df['risk_level'].isin(['Critical', 'High Risk'])]
             preventive_df = chat_predicted_df[chat_predicted_df['risk_level'] == 'Warning']
-            
             predict_savings = predictive_df['predicted_cost'].sum() * 0.60 if not predictive_df.empty else 0
             prevent_savings = preventive_df['predicted_cost'].sum() * 0.60 if not preventive_df.empty else 0
             
-            # Metadata Map (Broad fleet awareness for AI)
             fleet_metadata = {
                 "available_industries": df_assets['industry_name'].unique().tolist(),
                 "available_asset_types": df_assets['asset_type'].unique().tolist(),
-                "monitored_assets_mapping": all_assets_mapping # Crucial for SQL generation name matching
+                "monitored_assets_mapping": all_assets_mapping
             }
             
-            # Serialize into payload
             context_payload = {
                 "fleet_metadata": fleet_metadata,
                 "total_active_work_orders_count": len(active_wos),
@@ -1682,11 +1766,11 @@ elif selected == "AI Assistant":
                 "priority_work_orders": active_wos_list if not priority_wos.empty else "No active priority work orders"
             }
             
-            # Generate response directly (Bypassing HTTP for Cloud Stability)
             ai_reply = generate_response(prompt, context=context_payload)
         except Exception as e:
             ai_reply = f"🔌 Connection or processing error: {e}"
 
-        with st.chat_message("assistant"):
-            st.markdown(ai_reply)
         st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
