@@ -1628,8 +1628,8 @@ div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
     height: 64px !important;
     border-radius: 50% !important;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: white !important;
-    border: 3px solid rgba(255,255,255,0.3) !important;
+    color: transparent !important; /* Hide the emoji text */
+    border: 3px solid rgba(255,255,255,0.25) !important;
     animation: pulseGlow 2.5s ease-in-out infinite !important;
     display: flex !important;
     justify-content: center !important;
@@ -1639,25 +1639,47 @@ div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
     min-width: 64px !important;
     max-width: 64px !important;
     cursor: pointer !important;
+    position: relative !important;
+    /* SVG chat bubble icon as background */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 15.17L18.83 16H4V4h16v13.17zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 30px 30px !important;
 }
 
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover {
-    transform: scale(1.15) rotate(10deg) !important;
+    transform: scale(1.15) !important;
     animation: none !important;
     box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7) !important;
-    border-color: rgba(255,255,255,0.6) !important;
+    border-color: rgba(255,255,255,0.5) !important;
 }
 
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active {
     transform: scale(0.95) !important;
 }
 
+/* Hide the emoji text completely */
 div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p {
-    font-size: 28px !important;
+    font-size: 0px !important;
     margin: 0 !important;
     padding: 0 !important;
-    line-height: 1 !important;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)) !important;
+    line-height: 0 !important;
+    visibility: hidden !important;
+}
+
+/* ── Notification Badge ── */
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+    animation: statusPulse 2s ease-in-out infinite;
 }
 
 /* ── Popover Body (Chat Window) ── */
