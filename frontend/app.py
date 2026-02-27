@@ -1851,7 +1851,7 @@ components.html("""
         
         // Use setProperty instead of cssText to preserve Streamlit's existing styles
         chatPopover.style.setProperty('position', 'fixed', 'important');
-        chatPopover.style.setProperty('bottom', '30px', 'important');
+        chatPopover.style.setProperty('bottom', '80px', 'important');
         chatPopover.style.setProperty('right', '30px', 'important');
         chatPopover.style.setProperty('z-index', '999999', 'important');
         chatPopover.style.setProperty('width', 'auto', 'important');
