@@ -1692,7 +1692,7 @@ elif selected == "Cost Analysis":
         
         # ── Asset Cost Prediction (ML Model) ──────────────────────────────────
         with pred_tab1:
-            st.markdown("##### AI-Predicted Repair Cost")
+            st.markdown("##### Predicted Repair Cost")
             st.caption("Uses a trained ML model on historical work orders to estimate repair costs based on asset profile and urgency.")
             
             with st.container(border=True):
@@ -1739,7 +1739,7 @@ elif selected == "Cost Analysis":
                     is_warranty_active = st.toggle("Asset Under Active Warranty", value=False, key="pred1_warranty")
                     
                 with c2:
-                    st.markdown("##### AI Cost Prediction")
+                    st.markdown("##### Cost Prediction")
                     st.caption("Estimated bill based on historical invoice data:")
                     
                     if st.button("Calculate Impact", type="primary", key="pred1_calc"):
@@ -1858,7 +1858,7 @@ elif selected == "Cost Analysis":
         
         # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
         with pred_tab3:
-            st.markdown("##### Ad-hoc / Corrective (Emergency) Cost Estimator")
+            st.markdown("##### Ad-hoc / On-demand Cost Estimator")
             st.caption("Estimate the true cost of unplanned breakdowns including overtime, expedited parts, and production downtime losses.")
             
             with st.container(border=True):
@@ -1914,9 +1914,9 @@ elif selected == "Cost Analysis":
                         
                         # Display Metrics explicitly laying out the math
                         ms1, ms2, ms3 = st.columns(3)
-                        ms1.metric("1️⃣ Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
-                        ms2.metric("2️⃣ Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
-                        ms3.metric("3️⃣ Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
+                        ms1.metric("Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
+                        ms2.metric("Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
+                        ms3.metric("Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing ad-hoc impact..."):
