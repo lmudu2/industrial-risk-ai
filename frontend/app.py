@@ -1094,7 +1094,7 @@ elif selected == "Asset Monitor":
                                 "delta-neg" if risk_level in ["Critical","High Risk"] else "delta-neutral"), unsafe_allow_html=True)
         k4.markdown(metric_card("Warranty Status",
                                 "Active Coverage" if is_active_warranty else "Expired Coverage",
-                                f"Age: {age_str} | Exp: {warranty_expiry.strftime('%b %Y') if warranty_expiry else 'N/A'}",
+                                f"Asset Age: {age_str} | Exp: {warranty_expiry.strftime('%b %Y') if warranty_expiry else 'N/A'}",
                                 "delta-pos" if is_active_warranty else "delta-neg"), unsafe_allow_html=True)
 
 
@@ -1998,6 +1998,26 @@ div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]::after {
     border-radius: 50%;
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* ── "Ask AI" Label Tooltip ── */
+div[data-testid="stPopover"]::before {
+    content: 'Ask AI';
+    position: absolute;
+    right: 70px; /* Position to the left of the 56px button */
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    color: #1e293b;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 1000;
 }
 
 /* ── Popover Body (Chat Window) ── */
