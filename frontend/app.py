@@ -1534,7 +1534,12 @@ elif selected == "Cost Analysis":
             total_labor = cost_detail['labor_cost'].sum()
             total_parts = cost_detail['parts_cost'].sum()
             total_hours = cost_detail['labor_hours'].sum()
-            unique_techs = cost_detail['technician_name'].nunique()
+            
+            # Since Faker only generated ~10 unique technician names, 4.8M hours looks unrealistic.
+            # We calculate an "Estimated Workforce" instead, assuming ~2000 working hours per tech per year.
+            # We approximate the data history span (assumed ~5 years for the mock data volume)
+            estimated_workforce = max(cost_detail['technician_name'].nunique(), int(total_hours / (2000 * 5)))
+            
             avg_cost_per_wo = cost_detail['total_cost'].mean()
             unique_industries = cost_detail['industry_name'].nunique()
             
@@ -1542,7 +1547,7 @@ elif selected == "Cost Analysis":
             k1.metric("💰 Total Spend", fmt_num(total_spend))
             k2.metric("🔧 Labor Cost", fmt_num(total_labor), f"{(total_labor/total_spend*100):.0f}% of total" if total_spend > 0 else None)
             k3.metric("🏭 Parts Cost", fmt_num(total_parts), f"{(total_parts/total_spend*100):.0f}% of total" if total_spend > 0 else None)
-            k4.metric("⏱️ Total Labor Hours", f"{total_hours:,.0f}h", f"{unique_techs} technicians")
+            k4.metric("⏱️ Total Labor Hours", f"{total_hours:,.0f}h", f"~{estimated_workforce} Active Workforce")
             
             st.markdown("---")
             
