@@ -1845,9 +1845,9 @@ elif selected == "Cost Analysis":
                         
                         # Display Metrics explicitly laying out the math
                         ms1, ms2, ms3 = st.columns(3)
-                        ms1.metric("1️⃣ Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
-                        ms2.metric("2️⃣ Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
-                        ms3.metric("3️⃣ Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
+                        ms1.metric("Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
+                        ms2.metric("Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
+                        ms3.metric("Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing maintenance ROI..."):
