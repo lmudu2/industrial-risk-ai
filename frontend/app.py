@@ -1816,29 +1816,44 @@ elif selected == "Cost Analysis":
                     forecast_years = st.slider("Forecast Horizon (Years)", 1, 10, 3, key="prev_years")
                 
                 with p2:
-                    st.markdown("##### Cost Projection")
+                    st.markdown("##### Preventive Maintenance Cost Estimator")
+                    st.caption("Estimated cost for scheduled maintenance strategy:")
                     
-                    visits_per_year = {"Weekly": 52, "Monthly": 12, "Quarterly": 4, "Semi-Annual": 2, "Annual": 1}[inspection_interval]
-                    
-                    labor_cost_per_visit = labor_hours_prev * hourly_rate_prev
-                    total_cost_per_visit = labor_cost_per_visit + parts_cost_prev
-                    
-                    # Build year-by-year projection
-                    rows = []
-                    cumulative = 0
-                    for yr in range(1, forecast_years + 1):
-                        inflated_parts = parts_cost_prev * ((1 + parts_inflation / 100) ** (yr - 1))
-                        yr_cost = (labor_cost_per_visit + inflated_parts) * visits_per_year * num_assets
-                        cumulative += yr_cost
-                        rows.append({"Year": f"Year {yr}", "Annual Cost ($)": yr_cost, "Cumulative ($)": cumulative, "Visits": visits_per_year * num_assets})
-                    
-                    proj_df = pd.DataFrame(rows)
-                    
-                    # KPIs
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Cost per Visit", f"${total_cost_per_visit:,.0f}")
-                    m2.metric(f"Annual Cost (Yr 1)", f"${rows[0]['Annual Cost ($)']:,.0f}")
-                    m3.metric(f"{forecast_years}-Year Total", fmt_num(cumulative))
+                    if st.button("Calculate Cost", type="primary", key="prev_calc"):
+                        visits_per_year = {"Weekly": 52, "Monthly": 12, "Quarterly": 4, "Semi-Annual": 2, "Annual": 1}[inspection_interval]
+                        
+                        labor_cost_per_visit = labor_hours_prev * hourly_rate_prev
+                        total_cost_per_visit = labor_cost_per_visit + parts_cost_prev
+                        
+                        # Calculate Year 1 Preventive Budget
+                        year_1_preventive_cost = total_cost_per_visit * visits_per_year * num_assets
+                        
+                        # Simulate the "Do Nothing" Catastrophic Failure Cost
+                        # Emergency labor is typically 3x, parts are 1.5x, plus massive downtime
+                        est_emergency_labor = (labor_hours_prev * 3) * (hourly_rate_prev * 1.5)
+                        est_emergency_parts = parts_cost_prev * 2.5
+                        est_downtime_loss = 15000 # Simulated base downtime penalty
+                        
+                        # Assuming without PM, 20% of the fleet fails catastrophically in Year 1
+                        expected_failures = max(1, int(num_assets * 0.20))
+                        cost_per_failure = est_emergency_labor + est_emergency_parts + est_downtime_loss
+                        year_1_do_nothing_cost = cost_per_failure * expected_failures
+                        
+                        # Calculate Savings
+                        avoided_cost = year_1_do_nothing_cost - year_1_preventive_cost
+                        roi_pct = (avoided_cost / year_1_preventive_cost) * 100 if year_1_preventive_cost > 0 else 0
+                        
+                        # Display Metrics
+                        ms1, ms2 = st.columns(2)
+                        ms1.metric("Predicted Savings (Avoided Cost)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
+                        ms2.metric("Preventive Budget (Yr 1)", fmt_num(year_1_preventive_cost), "Cost to execute", delta_color="off")
+                        
+                        # Insight block
+                        with st.spinner("Analyzing maintenance ROI..."):
+                            if avoided_cost > 0:
+                                st.success(f"**Insight:**\n\nInvesting **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}** in scheduled maintenance for these {num_assets} units protects against an estimated **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in catastrophic failure costs (assuming {expected_failures} major breakdown(s)).\n\n**Net Avoided Cost:** {fmt_num(avoided_cost).replace('$', r'\$')}.")
+                            else:
+                                st.warning(f"**Insight:**\n\nThe planned preventive schedule is highly aggressive and costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which outweighs the estimated failure risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Consider reducing the inspection frequency.")
         
         # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
         with pred_tab3:
