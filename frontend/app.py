@@ -977,7 +977,7 @@ if selected == "Executive Overview":
 
 elif selected == "Asset Monitor":
     st.markdown("###  Assets Diagnostics using AI")
-    st.caption("AI continuously monitors sensor data to detect anomalies, predict component failures, and estimate repair costs — before breakdowns happen.")
+    st.caption("AI continuously monitors historical sensor data to detect anomalies, predict component failures, and estimate repair costs — before breakdowns happen.")
     st.markdown("---")
 
     # ── FILTERS ───────────────────────────────────────────────────────────────
