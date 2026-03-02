@@ -1519,6 +1519,17 @@ elif selected == "Cost Analysis":
                 cost_detail = cost_detail[cost_detail['asset_type'] == asset_type_filter]
             
             st.markdown("---")
+            
+            # ── Compact number formatter ──
+            def fmt_num(v):
+                """Format a dollar value as $XM, $Xk, or $X."""
+                if abs(v) >= 1_000_000:
+                    return f"${v/1_000_000:.1f}M"
+                elif abs(v) >= 1_000:
+                    return f"${v/1_000:.0f}k"
+                else:
+                    return f"${v:,.0f}"
+
             total_spend = cost_detail['total_cost'].sum()
             total_labor = cost_detail['labor_cost'].sum()
             total_parts = cost_detail['parts_cost'].sum()
@@ -1528,9 +1539,9 @@ elif selected == "Cost Analysis":
             unique_industries = cost_detail['industry_name'].nunique()
             
             k1, k2, k3, k4 = st.columns(4)
-            k1.metric("💰 Total Spend", f"${total_spend:,.0f}")
-            k2.metric("🔧 Labor Cost", f"${total_labor:,.0f}", f"{(total_labor/total_spend*100):.0f}% of total" if total_spend > 0 else None)
-            k3.metric("🏭 Parts Cost", f"${total_parts:,.0f}", f"{(total_parts/total_spend*100):.0f}% of total" if total_spend > 0 else None)
+            k1.metric("💰 Total Spend", fmt_num(total_spend))
+            k2.metric("🔧 Labor Cost", fmt_num(total_labor), f"{(total_labor/total_spend*100):.0f}% of total" if total_spend > 0 else None)
+            k3.metric("🏭 Parts Cost", fmt_num(total_parts), f"{(total_parts/total_spend*100):.0f}% of total" if total_spend > 0 else None)
             k4.metric("⏱️ Total Labor Hours", f"{total_hours:,.0f}h", f"{unique_techs} technicians")
             
             st.markdown("---")
@@ -1556,8 +1567,8 @@ elif selected == "Cost Analysis":
                 
                 st.dataframe(
                     priority_spend.style.format({
-                        'Total Spend ($)': '${:,.0f}',
-                        'Avg Cost ($)': '${:,.0f}'
+                        'Total Spend ($)': lambda v: fmt_num(v),
+                        'Avg Cost ($)': lambda v: fmt_num(v)
                     }),
                     use_container_width=True,
                     hide_index=True
@@ -1580,9 +1591,9 @@ elif selected == "Cost Analysis":
                 
                 st.dataframe(
                     industry_spend.style.format({
-                        'Total Spend ($)': '${:,.0f}',
-                        'Labor ($)': '${:,.0f}',
-                        'Parts ($)': '${:,.0f}'
+                        'Total Spend ($)': lambda v: fmt_num(v),
+                        'Labor ($)': lambda v: fmt_num(v),
+                        'Parts ($)': lambda v: fmt_num(v)
                     }),
                     use_container_width=True,
                     hide_index=True
@@ -1605,10 +1616,10 @@ elif selected == "Cost Analysis":
             
             st.dataframe(
                 asset_spend.head(20).style.format({
-                    'Total Cost ($)': '${:,.0f}',
-                    'Labor ($)': '${:,.0f}',
-                    'Parts ($)': '${:,.0f}',
-                    'Other ($)': '${:,.0f}',
+                    'Total Cost ($)': lambda v: fmt_num(v),
+                    'Labor ($)': lambda v: fmt_num(v),
+                    'Parts ($)': lambda v: fmt_num(v),
+                    'Other ($)': lambda v: fmt_num(v),
                     'Labor Hours': '{:,.1f}'
                 }),
                 use_container_width=True,
@@ -1634,8 +1645,8 @@ elif selected == "Cost Analysis":
                 st.dataframe(
                     tech_analysis.head(15).style.format({
                         'Hours Worked': '{:,.1f}',
-                        'Labor Cost ($)': '${:,.0f}',
-                        'Avg Rate ($/hr)': '${:,.0f}'
+                        'Labor Cost ($)': lambda v: fmt_num(v),
+                        'Avg Rate ($/hr)': lambda v: fmt_num(v)
                     }),
                     use_container_width=True,
                     hide_index=True
