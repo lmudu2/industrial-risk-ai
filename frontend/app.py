@@ -1903,28 +1903,20 @@ elif selected == "Cost Analysis":
                         total_per_incident = total_labor + total_parts + downtime_cost
                         year_1_do_nothing_cost = total_per_incident * breakdown_freq
                         
-                        # Simulate Preventive Alternative (assumes 50% drop in incidents and no overtime/expedites)
-                        preventive_incidents = breakdown_freq * 0.5
-                        preventive_per_incident = base_labor + adhoc_parts + (downtime_hours * 0.2 * revenue_per_hour) # 80% less downtime
-                        year_1_preventive_cost = preventive_per_incident * preventive_incidents
+                        # Isolate the "Penalty" of it being an emergency
+                        base_cost = base_labor + adhoc_parts
+                        emergency_penalties = overtime_premium + expedite_cost
                         
-                        # Calculate Savings
-                        avoided_cost = year_1_do_nothing_cost - year_1_preventive_cost
-                        roi_pct = (avoided_cost / year_1_preventive_cost) * 100 if year_1_preventive_cost > 0 else 0
-                        
-                        # Display Metrics explicitly laying out the math
+                        # Display Metrics explicitly laying out the penalty of an emergency
                         ms1, ms2, ms3 = st.columns(3)
-                        ms1.metric("Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
-                        ms2.metric("Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
-                        ms3.metric("Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
+                        ms1.metric("1️⃣ Base Repair Cost", fmt_num(base_cost * breakdown_freq), "Standard labor & parts", delta_color="off")
+                        ms2.metric("2️⃣ Emergency Penalties", fmt_num(emergency_penalties * breakdown_freq), "Overtime & expedited shipping", delta_color="off")
+                        ms3.metric("3️⃣ Downtime Losses", fmt_num(downtime_cost * breakdown_freq), "Lost production revenue", delta_color="normal")
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing ad-hoc impact..."):
-                            if avoided_cost > 0:
-                                st.success(f"**Insight:**\n\nIf you allow these **{breakdown_freq} breakdowns** to occur, you risk **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in emergency labor, expedited parts, and massive downtime losses.\n\nBy moving to a planned preventive schedule costing **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, you yield a net savings of **{fmt_num(avoided_cost).replace('$', r'\$')}** while dramatically minimizing downtime.")
-                            else:
-                                st.warning(f"**Insight:**\n\nThe planned preventive schedule costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which is higher than the estimated breakdown risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Running to failure may actually be the most cost-effective strategy for this asset class.")
-
+                            st.error(f"**Insight:**\n\nRunning to failure for these **{breakdown_freq} breakdowns** creates a massive financial penalty.\n\nWhile the actual repair only requires **{fmt_num(base_cost * breakdown_freq).replace('$', r'\$')}** in base labor and parts, treating it as an emergency adds **{fmt_num(emergency_penalties * breakdown_freq).replace('$', r'\$')}** in overtime/shipping penalties and triggers **{fmt_num(downtime_cost * breakdown_freq).replace('$', r'\$')}** in lost revenue.\n\n**Total Ad-Hoc Liability:** {fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}.")
+        
 # ─────────────────────────────────────────────
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
 # ─────────────────────────────────────────────
