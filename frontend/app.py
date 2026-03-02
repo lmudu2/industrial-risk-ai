@@ -542,7 +542,7 @@ def show_action_center(active_wo, predicted_critical_df, filtered_assets):
 
 if selected == "Executive Overview":
     # st.markdown("### Predictive Maintenance Control Center")
-    st.markdown("### AI/ML powered Asset Maintenance and Advanced Analytics")
+    st.markdown("### AI/ML-Enabled Assets Performance Analytics and Maintenance Optimization")
     
     # ─── STRATEGY VIEW FILTER ───
     selected_strategy = st.selectbox(
@@ -2072,12 +2072,6 @@ div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
     border-radius: 50%;
     display: inline-block;
     box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
-    animation: statusPulse 2s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
 }
 
 .chat-header .status-badge {
@@ -2211,13 +2205,6 @@ components.html("""
             depth++;
         }
     }
-    
-    // Run on initial load with staggered delays
-    floatPopover();
-    setTimeout(floatPopover, 300);
-    setTimeout(floatPopover, 800);
-    setTimeout(floatPopover, 1500);
-    setTimeout(floatPopover, 3000);
     
     // Debounced MutationObserver - only watches childList (NOT attributes)
     // This prevents infinite loops when we modify styles
