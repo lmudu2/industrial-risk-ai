@@ -1886,43 +1886,44 @@ elif selected == "Cost Analysis":
                     revenue_per_hour = st.number_input("Revenue Lost per Hour ($)", min_value=0, value=5000, step=500, key="adhoc_rev")
                 
                 with a2:
-                    st.markdown("##### Cost Breakdown per Incident")
+                    st.markdown("##### Ad-Hoc Cost Impact")
+                    st.caption("Estimated financial impact of running to failure:")
                     
-                    # Calculations
-                    base_labor = adhoc_labor_hours * adhoc_rate
-                    overtime_premium = base_labor * (overtime_pct / 100)
-                    total_labor = base_labor + overtime_premium
-                    
-                    expedite_cost = adhoc_parts * (expedite_pct / 100)
-                    total_parts = adhoc_parts + expedite_cost
-                    
-                    downtime_cost = downtime_hours * revenue_per_hour
-                    
-                    total_per_incident = total_labor + total_parts + downtime_cost
-                    total_annual = total_per_incident * breakdown_freq
-                    
-                    # Display breakdown
-                    st.markdown("**Per Incident Cost Breakdown**")
-                    breakdown_data = {
-                        "Cost Category": ["Base Labor", "Overtime Premium", "Parts", "Expedited Shipping", "Downtime Loss", "**Total per Incident**"],
-                        "Amount ($)": [base_labor, overtime_premium, adhoc_parts, expedite_cost, downtime_cost, total_per_incident]
-                    }
-                    bd_df = pd.DataFrame(breakdown_data)
-                    st.dataframe(
-                        bd_df.style.format({'Amount ($)': lambda v: fmt_num(v)}),
-                        use_container_width=True, hide_index=True
-                    )
-                    
-                    st.markdown("---")
-                    ann1, ann2 = st.columns(2)
-                    ann1.metric("Annual Ad-hoc Cost", fmt_num(total_annual), f"{breakdown_freq} incidents × {fmt_num(total_per_incident)}")
-                    
-                    # Compare to preventive
-                    st.info(f"""
-💡 **Insight:** At **{breakdown_freq} breakdowns/year**, your unplanned repair bill is **{fmt_num(total_annual)}** annually.  
-If preventive maintenance could reduce breakdowns by **50%**, you'd save **{fmt_num(total_annual * 0.5)}** per year.  
-Downtime losses account for **{(downtime_cost/total_per_incident*100):.0f}%** of each incident's cost.
-                    """)
+                    if st.button("Calculate Ad-Hoc Impact", type="primary", key="adhoc_calc"):
+                        # Calculations
+                        base_labor = adhoc_labor_hours * adhoc_rate
+                        overtime_premium = base_labor * (overtime_pct / 100)
+                        total_labor = base_labor + overtime_premium
+                        
+                        expedite_cost = adhoc_parts * (expedite_pct / 100)
+                        total_parts = adhoc_parts + expedite_cost
+                        
+                        downtime_cost = downtime_hours * revenue_per_hour
+                        
+                        total_per_incident = total_labor + total_parts + downtime_cost
+                        year_1_do_nothing_cost = total_per_incident * breakdown_freq
+                        
+                        # Simulate Preventive Alternative (assumes 50% drop in incidents and no overtime/expedites)
+                        preventive_incidents = breakdown_freq * 0.5
+                        preventive_per_incident = base_labor + adhoc_parts + (downtime_hours * 0.2 * revenue_per_hour) # 80% less downtime
+                        year_1_preventive_cost = preventive_per_incident * preventive_incidents
+                        
+                        # Calculate Savings
+                        avoided_cost = year_1_do_nothing_cost - year_1_preventive_cost
+                        roi_pct = (avoided_cost / year_1_preventive_cost) * 100 if year_1_preventive_cost > 0 else 0
+                        
+                        # Display Metrics explicitly laying out the math
+                        ms1, ms2, ms3 = st.columns(3)
+                        ms1.metric("1️⃣ Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
+                        ms2.metric("2️⃣ Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
+                        ms3.metric("3️⃣ Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
+                        
+                        # Insight block with explicit mathematical explanation
+                        with st.spinner("Analyzing ad-hoc impact..."):
+                            if avoided_cost > 0:
+                                st.success(f"**Insight:**\n\nIf you allow these **{breakdown_freq} breakdowns** to occur, you risk **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in emergency labor, expedited parts, and massive downtime losses.\n\nBy moving to a planned preventive schedule costing **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, you yield a net savings of **{fmt_num(avoided_cost).replace('$', r'\$')}** while dramatically minimizing downtime.")
+                            else:
+                                st.warning(f"**Insight:**\n\nThe planned preventive schedule costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which is higher than the estimated breakdown risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Running to failure may actually be the most cost-effective strategy for this asset class.")
 
 # ─────────────────────────────────────────────
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
