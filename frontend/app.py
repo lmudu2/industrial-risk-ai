@@ -1839,15 +1839,6 @@ elif selected == "Cost Analysis":
                     m1.metric("Cost per Visit", f"${total_cost_per_visit:,.0f}")
                     m2.metric(f"Annual Cost (Yr 1)", f"${rows[0]['Annual Cost ($)']:,.0f}")
                     m3.metric(f"{forecast_years}-Year Total", fmt_num(cumulative))
-                    
-                    st.dataframe(
-                        proj_df.style.format({
-                            'Annual Cost ($)': lambda v: fmt_num(v),
-                            'Cumulative ($)': lambda v: fmt_num(v)
-                        }),
-                        use_container_width=True, hide_index=True
-                    )
-                    st.line_chart(proj_df.set_index("Year")[["Annual Cost ($)", "Cumulative ($)"]])
         
         # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
         with pred_tab3:
