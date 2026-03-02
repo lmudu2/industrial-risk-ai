@@ -1909,9 +1909,9 @@ elif selected == "Cost Analysis":
                         
                         # Display Metrics explicitly laying out the penalty of an emergency
                         ms1, ms2, ms3 = st.columns(3)
-                        ms1.metric("1️⃣ Base Repair Cost", fmt_num(base_cost * breakdown_freq), "Standard labor & parts", delta_color="off")
-                        ms2.metric("2️⃣ Emergency Penalties", fmt_num(emergency_penalties * breakdown_freq), "Overtime & expedited shipping", delta_color="off")
-                        ms3.metric("3️⃣ Downtime Losses", fmt_num(downtime_cost * breakdown_freq), "Lost production revenue", delta_color="normal")
+                        ms1.metric("Base Repair Cost", fmt_num(base_cost * breakdown_freq), "Standard labor", delta_color="off")
+                        ms2.metric("Emergency Penalties", fmt_num(emergency_penalties * breakdown_freq), "Overtime", delta_color="off")
+                        ms3.metric("Downtime Losses", fmt_num(downtime_cost * breakdown_freq), "Lost production revenue", delta_color="normal")
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing ad-hoc impact..."):
