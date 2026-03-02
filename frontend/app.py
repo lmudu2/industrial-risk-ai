@@ -542,7 +542,7 @@ def show_action_center(active_wo, predicted_critical_df, filtered_assets):
 
 if selected == "Executive Overview":
     # st.markdown("### Predictive Maintenance Control Center")
-    st.markdown("### Asset Risk Analysis for Industrial Machinery")
+    st.markdown("### AI/ML powered Asset Maintenance and Advanced Analytics")
     
     # ─── STRATEGY VIEW FILTER ───
     selected_strategy = st.selectbox(
@@ -976,7 +976,7 @@ if selected == "Executive Overview":
 # ─────────────────────────────────────────────
 
 elif selected == "Asset Monitor":
-    st.markdown("###  Assets Diagnostics using AI")
+    st.markdown("###  Assets Diagnostics using AI/ML")
     st.caption("AI continuously monitors historical sensor data to detect anomalies, predict component failures, and estimate repair costs — before breakdowns happen.")
     st.markdown("---")
 
@@ -1672,110 +1672,246 @@ elif selected == "Cost Analysis":
             st.warning("⚠️ No historical cost data available. Cost records will appear here once work orders generate expenses.")
     
     # ─────────────────────────────────────
-    # TAB 2: COST PREDICTION (existing)
+    # ─────────────────────────────────────
+    # TAB 2: COST PREDICTION
     # ─────────────────────────────────────
     with tab_pred:
-        st.markdown("### Preventive Cost Simulator")
+        st.markdown("### Cost Prediction")
+        st.caption("Estimate future costs across three maintenance scenarios: AI-predicted asset repair, planned preventive maintenance, and emergency ad-hoc repairs.")
         
-        with st.container(border=True):
-            c1, c2 = st.columns(2)
+        pred_tab1, pred_tab2, pred_tab3 = st.tabs([
+            "Asset Cost Prediction",
+            "Preventive Cost Estimator",
+            "Ad-hoc /On-demand"
+        ])
+        
+        # ── Asset Cost Prediction (ML Model) ──────────────────────────────────
+        with pred_tab1:
+            st.markdown("##### AI-Predicted Repair Cost")
+            st.caption("Uses a trained ML model on historical work orders to estimate repair costs based on asset profile and urgency.")
             
-            with c1:
-                st.markdown("##### Scenario Configuration")
-                st.caption("Simulate the cost difference between **Planned Maintenance** vs. **Emergency Repairs**:")
+            with st.container(border=True):
+                c1, c2 = st.columns(2)
                 
-                priority_options = ["low", "medium", "high", "critical"]
-                priority_labels = {
-                    "low": "Planned (Low Urgency)",
-                    "medium": "Standard Repair",
-                    "high": "Urgent Response",
-                    "critical": "🚨 Emergency"
-                }
-                
-                priority_display = st.select_slider(
-                    "Urgency of Repair", 
-                    options=priority_options,
-                    value="medium",
-                    format_func=lambda x: priority_labels[x],
-                    help="Emergency repairs cost 3x more due to overtime and expedited shipping."
-                )
-                
-                age_years = st.slider(
-                    "Asset Age (Years)", 
-                    min_value=0.0, max_value=20.0, value=3.0, step=0.5,
-                    help="Older assets require more expensive parts."
-                )
-                age_days = int(age_years * 365)
-                
-                complexity_scale = st.slider(
-                    "Repair Complexity (Scale 1-10)", 
-                    min_value=1, max_value=10, value=3,
-                    help="1 = Simple filter change. 10 = Complete engine overhaul."
-                )
-                complexity_len = int(np.interp(complexity_scale, [1, 10], [10, 200]))
-                
-                asset_type = st.selectbox("Asset Class", df_assets['asset_type'].unique())
-                
-                is_warranty_active = st.toggle("Asset Under Active Warranty", value=False)
-                
-            with c2:
-                st.markdown("##### AI Cost Prediction")
-                st.caption("Estimated bill based on historical invoice data:")
-                
-                if st.button("Calculate Impact", type="primary"):
-                    if cost_model:
-                        input_df = pd.DataFrame([{
-                            'priority': priority_display,
-                            'asset_type': asset_type,
-                            'industry': "Manufacturing",
-                            'asset_age_days': age_days,
-                            'description_len': complexity_len
-                        }])
-                        pred_cost = float(np.expm1(cost_model.predict(input_df)[0]))
-                        
-                        purchase_price = {
-                            "Robotic Arm": 150000,
-                            "Conveyor System": 85000,
-                            "Centrifuge": 250000,
-                            "Industrial Boiler": 120000,
-                            "Delivery Truck": 65000,
-                            "Wind Turbine": 2000000,
-                            "CNC Machine": 180000
-                        }.get(asset_type, 100000)
-                        
-                        useful_life_years = 15.0
-                        residual_value = max(purchase_price * 0.10, purchase_price * (1.0 - (age_years / useful_life_years)))
-                        repair_ratio = (pred_cost / residual_value) * 100
-                        
-                        if is_warranty_active:
-                            pred_cost = 0.0
-                            repair_ratio = 0.0
-                            pred_cost = pred_cost * 0.15
-                            repair_ratio = (pred_cost / residual_value) * 100 if residual_value > 0 else 0
+                with c1:
+                    st.markdown("##### Scenario Configuration")
+                    st.caption("Simulate the cost difference between **Planned Maintenance** vs. **Emergency Repairs**:")
+                    
+                    priority_options = ["low", "medium", "high", "critical"]
+                    priority_labels = {
+                        "low": "Planned (Low Urgency)",
+                        "medium": "Standard Repair",
+                        "high": "Urgent Response",
+                        "critical": "🚨 Emergency"
+                    }
+                    
+                    priority_display = st.select_slider(
+                        "Urgency of Repair", 
+                        options=priority_options,
+                        value="medium",
+                        format_func=lambda x: priority_labels[x],
+                        help="Emergency repairs cost 3x more due to overtime and expedited shipping.",
+                        key="pred1_priority"
+                    )
+                    
+                    age_years = st.slider(
+                        "Asset Age (Years)", 
+                        min_value=0.0, max_value=20.0, value=3.0, step=0.5,
+                        help="Older assets require more expensive parts.",
+                        key="pred1_age"
+                    )
+                    age_days = int(age_years * 365)
+                    
+                    complexity_scale = st.slider(
+                        "Repair Complexity (Scale 1-10)", 
+                        min_value=1, max_value=10, value=3,
+                        help="1 = Simple filter change. 10 = Complete engine overhaul.",
+                        key="pred1_complexity"
+                    )
+                    complexity_len = int(np.interp(complexity_scale, [1, 10], [10, 200]))
+                    
+                    asset_type = st.selectbox("Asset Class", df_assets['asset_type'].unique(), key="pred1_asset")
+                    is_warranty_active = st.toggle("Asset Under Active Warranty", value=False, key="pred1_warranty")
+                    
+                with c2:
+                    st.markdown("##### AI Cost Prediction")
+                    st.caption("Estimated bill based on historical invoice data:")
+                    
+                    if st.button("Calculate Impact", type="primary", key="pred1_calc"):
+                        if cost_model:
+                            input_df = pd.DataFrame([{
+                                'priority': priority_display,
+                                'asset_type': asset_type,
+                                'industry': "Manufacturing",
+                                'asset_age_days': age_days,
+                                'description_len': complexity_len
+                            }])
+                            pred_cost = float(np.expm1(cost_model.predict(input_df)[0]))
                             
-                        st.metric("Estimated Cost Impact (Discounted)", f"${pred_cost:,.2f}")
-                        
-                        with st.spinner("Analyzing repair vs. replace strategy..."):
-                            advice_data = {
-                                "asset_type": asset_type,
-                                "age_years": age_years,
-                                "predicted_cost": pred_cost,
-                                "residual_value": residual_value,
-                                "repair_ratio": repair_ratio,
-                                "under_warranty": is_warranty_active,
-                                "priority": priority_labels[priority_display], 
-                                "complexity": complexity_scale
-                            }
-                            recommendation = cached_get_maintenance_recommendation(advice_data)
+                            purchase_price = {
+                                "Robotic Arm": 150000, "Conveyor System": 85000,
+                                "Centrifuge": 250000, "Industrial Boiler": 120000,
+                                "Delivery Truck": 65000, "Wind Turbine": 2000000,
+                                "CNC Machine": 180000
+                            }.get(asset_type, 100000)
                             
-                            if priority_display == "critical":
-                                st.error(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ CRITICAL PRIORITY increases labor costs by ~300%.")
-                            elif age_years > 8:
-                                st.warning(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ High asset age (>8yr) correlates with 20% higher parts costs.")
-                            elif complexity_scale > 7:
-                                st.info(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ℹ️ High complexity suggests specialized labor.")
-                            else:
-                                st.success(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ✅ Standard maintenance parameters.")
+                            useful_life_years = 15.0
+                            residual_value = max(purchase_price * 0.10, purchase_price * (1.0 - (age_years / useful_life_years)))
+                            repair_ratio = (pred_cost / residual_value) * 100
+                            
+                            if is_warranty_active:
+                                pred_cost = pred_cost * 0.15
+                                repair_ratio = (pred_cost / residual_value) * 100 if residual_value > 0 else 0
+                                
+                            st.metric("Estimated Cost Impact", f"${pred_cost:,.2f}")
+                            
+                            with st.spinner("Analyzing repair vs. replace strategy..."):
+                                advice_data = {
+                                    "asset_type": asset_type, "age_years": age_years,
+                                    "predicted_cost": pred_cost, "residual_value": residual_value,
+                                    "repair_ratio": repair_ratio, "under_warranty": is_warranty_active,
+                                    "priority": priority_labels[priority_display], "complexity": complexity_scale
+                                }
+                                recommendation = cached_get_maintenance_recommendation(advice_data)
+                                if priority_display == "critical":
+                                    st.error(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ CRITICAL PRIORITY increases labor costs by ~300%.")
+                                elif age_years > 8:
+                                    st.warning(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ⚠️ High asset age (>8yr) correlates with 20% higher parts costs.")
+                                elif complexity_scale > 7:
+                                    st.info(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ℹ️ High complexity suggests specialized labor.")
+                                else:
+                                    st.success(f"**Advice:**\n\n{recommendation}\n\n**Key Driver:** ✅ Standard maintenance parameters.")
+        
+        # ── Preventive Cost Estimator ──────────────────────────────────────────
+        with pred_tab2:
+            st.markdown("##### Preventive Maintenance Cost Estimator")
+            st.caption("Plan your scheduled maintenance budget: inspection cycles, labor time, and routine parts replacement.")
+            
+            with st.container(border=True):
+                p1, p2 = st.columns(2)
+                
+                with p1:
+                    st.markdown("##### Maintenance Schedule")
+                    asset_type_prev = st.selectbox("Asset Type", df_assets['asset_type'].unique(), key="prev_asset")
+                    inspection_interval = st.selectbox(
+                        "Inspection Interval",
+                        options=["Weekly", "Monthly", "Quarterly", "Semi-Annual", "Annual"],
+                        index=2,
+                        help="How often is this asset inspected?"
+                    )
+                    num_assets = st.number_input("Number of Assets", min_value=1, max_value=500, value=5, key="prev_num")
+                    
+                    st.markdown("##### Labor Inputs")
+                    labor_hours_prev = st.slider("Labor Hours per Visit", 1, 24, 4, key="prev_labor_hrs")
+                    hourly_rate_prev = st.slider("Technician Rate ($/hr)", 30, 200, 75, key="prev_rate")
+                    
+                    st.markdown("##### Parts & Consumables")
+                    parts_cost_prev = st.number_input("Parts Cost per Visit ($)", min_value=0, value=250, step=50, key="prev_parts")
+                    parts_inflation = st.slider("Annual Parts Inflation (%)", 0, 15, 3, key="prev_inflation")
+                    forecast_years = st.slider("Forecast Horizon (Years)", 1, 10, 3, key="prev_years")
+                
+                with p2:
+                    st.markdown("##### Cost Projection")
+                    
+                    visits_per_year = {"Weekly": 52, "Monthly": 12, "Quarterly": 4, "Semi-Annual": 2, "Annual": 1}[inspection_interval]
+                    
+                    labor_cost_per_visit = labor_hours_prev * hourly_rate_prev
+                    total_cost_per_visit = labor_cost_per_visit + parts_cost_prev
+                    
+                    # Build year-by-year projection
+                    rows = []
+                    cumulative = 0
+                    for yr in range(1, forecast_years + 1):
+                        inflated_parts = parts_cost_prev * ((1 + parts_inflation / 100) ** (yr - 1))
+                        yr_cost = (labor_cost_per_visit + inflated_parts) * visits_per_year * num_assets
+                        cumulative += yr_cost
+                        rows.append({"Year": f"Year {yr}", "Annual Cost ($)": yr_cost, "Cumulative ($)": cumulative, "Visits": visits_per_year * num_assets})
+                    
+                    proj_df = pd.DataFrame(rows)
+                    
+                    # KPIs
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Cost per Visit", f"${total_cost_per_visit:,.0f}")
+                    m2.metric(f"Annual Cost (Yr 1)", f"${rows[0]['Annual Cost ($)']:,.0f}")
+                    m3.metric(f"{forecast_years}-Year Total", fmt_num(cumulative))
+                    
+                    st.markdown("**Year-by-Year Projection**")
+                    st.dataframe(
+                        proj_df.style.format({
+                            'Annual Cost ($)': lambda v: fmt_num(v),
+                            'Cumulative ($)': lambda v: fmt_num(v)
+                        }),
+                        use_container_width=True, hide_index=True
+                    )
+                    st.line_chart(proj_df.set_index("Year")[["Annual Cost ($)", "Cumulative ($)"]])
+        
+        # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
+        with pred_tab3:
+            st.markdown("##### Ad-hoc / Corrective (Emergency) Cost Estimator")
+            st.caption("Estimate the true cost of unplanned breakdowns including overtime, expedited parts, and production downtime losses.")
+            
+            with st.container(border=True):
+                a1, a2 = st.columns(2)
+                
+                with a1:
+                    st.markdown("##### Breakdown Details")
+                    asset_type_adhoc = st.selectbox("Asset Type", df_assets['asset_type'].unique(), key="adhoc_asset")
+                    breakdown_freq = st.slider("Expected Breakdowns per Year", 1, 24, 3, key="adhoc_freq",
+                                              help="How many unplanned failures do you anticipate?")
+                    
+                    st.markdown("##### Labor")
+                    adhoc_labor_hours = st.slider("Labor Hours per Incident", 2, 48, 8, key="adhoc_hrs")
+                    adhoc_rate = st.slider("Standard Rate ($/hr)", 30, 200, 75, key="adhoc_rate")
+                    overtime_pct = st.slider("Overtime Premium (%)", 25, 100, 50, key="adhoc_ot",
+                                            help="Ad-hoc repairs often require overtime (50-100% premium)")
+                    
+                    st.markdown("##### Parts & Logistics")
+                    adhoc_parts = st.number_input("Parts Cost per Incident ($)", min_value=0, value=800, step=100, key="adhoc_parts")
+                    expedite_pct = st.slider("Expedited Shipping Surcharge (%)", 0, 100, 30, key="adhoc_exp",
+                                            help="Rush orders typically add 20-50% on parts cost")
+                    
+                    st.markdown("##### Downtime Impact")
+                    downtime_hours = st.slider("Avg Downtime per Incident (hrs)", 1, 72, 12, key="adhoc_downtime")
+                    revenue_per_hour = st.number_input("Revenue Lost per Hour ($)", min_value=0, value=5000, step=500, key="adhoc_rev")
+                
+                with a2:
+                    st.markdown("##### Cost Breakdown per Incident")
+                    
+                    # Calculations
+                    base_labor = adhoc_labor_hours * adhoc_rate
+                    overtime_premium = base_labor * (overtime_pct / 100)
+                    total_labor = base_labor + overtime_premium
+                    
+                    expedite_cost = adhoc_parts * (expedite_pct / 100)
+                    total_parts = adhoc_parts + expedite_cost
+                    
+                    downtime_cost = downtime_hours * revenue_per_hour
+                    
+                    total_per_incident = total_labor + total_parts + downtime_cost
+                    total_annual = total_per_incident * breakdown_freq
+                    
+                    # Display breakdown
+                    st.markdown("**Per Incident Cost Breakdown**")
+                    breakdown_data = {
+                        "Cost Category": ["Base Labor", "Overtime Premium", "Parts", "Expedited Shipping", "Downtime Loss", "**Total per Incident**"],
+                        "Amount ($)": [base_labor, overtime_premium, adhoc_parts, expedite_cost, downtime_cost, total_per_incident]
+                    }
+                    bd_df = pd.DataFrame(breakdown_data)
+                    st.dataframe(
+                        bd_df.style.format({'Amount ($)': lambda v: fmt_num(v)}),
+                        use_container_width=True, hide_index=True
+                    )
+                    
+                    st.markdown("---")
+                    ann1, ann2 = st.columns(2)
+                    ann1.metric("Annual Ad-hoc Cost", fmt_num(total_annual), f"{breakdown_freq} incidents × {fmt_num(total_per_incident)}")
+                    
+                    # Compare to preventive
+                    st.info(f"""
+💡 **Insight:** At **{breakdown_freq} breakdowns/year**, your unplanned repair bill is **{fmt_num(total_annual)}** annually.  
+If preventive maintenance could reduce breakdowns by **50%**, you'd save **{fmt_num(total_annual * 0.5)}** per year.  
+Downtime losses account for **{(downtime_cost/total_per_incident*100):.0f}%** of each incident's cost.
+                    """)
 
 # ─────────────────────────────────────────────
 # SECTION 4: PERSISTENT AI ASSISTANT WIDGET
