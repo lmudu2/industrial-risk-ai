@@ -1843,17 +1843,18 @@ elif selected == "Cost Analysis":
                         avoided_cost = year_1_do_nothing_cost - year_1_preventive_cost
                         roi_pct = (avoided_cost / year_1_preventive_cost) * 100 if year_1_preventive_cost > 0 else 0
                         
-                        # Display Metrics
-                        ms1, ms2 = st.columns(2)
-                        ms1.metric("Predicted Savings (Avoided Cost)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
-                        ms2.metric("Preventive Budget (Yr 1)", fmt_num(year_1_preventive_cost), "Cost to execute", delta_color="off")
+                        # Display Metrics explicitly laying out the math
+                        ms1, ms2, ms3 = st.columns(3)
+                        ms1.metric("1️⃣ Preventive Budget", fmt_num(year_1_preventive_cost), "Cost if fixed now", delta_color="off")
+                        ms2.metric("2️⃣ Expected Breakdown Cost", fmt_num(year_1_do_nothing_cost), "Cost if ignored", delta_color="off")
+                        ms3.metric("3️⃣ Avoided Cost (Savings)", fmt_num(avoided_cost), f"{roi_pct:,.0f}% ROI", delta_color="normal")
                         
-                        # Insight block
+                        # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing maintenance ROI..."):
                             if avoided_cost > 0:
-                                st.success(f"**Insight:**\n\nInvesting **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}** in scheduled maintenance for these {num_assets} units protects against an estimated **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in catastrophic failure costs (assuming {expected_failures} major breakdown(s)).\n\n**Net Avoided Cost:** {fmt_num(avoided_cost).replace('$', r'\$')}.")
+                                st.success(f"**Insight:**\n\nIf you ignore these {num_assets} units, you risk **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in emergency breakdown costs. By spending **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}** on scheduled maintenance now, you yield a net savings of **{fmt_num(avoided_cost).replace('$', r'\$')}**.")
                             else:
-                                st.warning(f"**Insight:**\n\nThe planned preventive schedule is highly aggressive and costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which outweighs the estimated failure risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Consider reducing the inspection frequency.")
+                                st.warning(f"**Insight:**\n\nThe planned preventive schedule costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which is higher than the estimated breakdown risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Consider reducing your inspection frequency.")
         
         # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
         with pred_tab3:
