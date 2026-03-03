@@ -11,8 +11,7 @@ This platform provides a comprehensive suite for cross-industry asset management
 
 ## 🌐 Deployment Options
 - **Streamlit Cloud (Live)**: [Industrial Risk AI Dashboard](https://chatbotservicepy-nuclcdfs5huczcuadti3as.streamlit.app)
-- **Google Colab (Interactive)**: Launch via [notebooks/launch_on_colab.ipynb](https://github.com/lmudu2/industrial-risk-ai/blob/main/notebooks/launch_on_colab.ipynb)
-    - *Note: Add your `GROQ_API_KEY` to Colab Secrets before running.*
+- **Google Colab (Interactive Demo)**: Open the provided [Predictive_Maintenance_Platform.ipynb](https://github.com/lmudu2/industrial-risk-ai/blob/main/Predictive_Maintenance_Platform.ipynb) directly in Google Colab to run the full dashboard & backend API in the cloud without installing anything locally.
 
 ## 🏗️ Architecture
 - **Frontend**: Streamlit-based AI-first dashboard with glassmorphism aesthetics and interactive visualizations.
