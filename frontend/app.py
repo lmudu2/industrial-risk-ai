@@ -552,10 +552,9 @@ if selected == "Executive Overview":
     selected_strategy = st.selectbox(
         "Select Strategic View:", 
         RAW_STRATEGIES, 
-        index=RAW_STRATEGIES.index(st.session_state.selected_strategy_key),
+        key="selected_strategy_key",
         help="All: All Assets | Predictive: AI Risks | Preventive: Scheduled Tasks | Ad-hoc: Unplanned Repairs"
     )
-    st.session_state.selected_strategy_key = selected_strategy
     
     # Base Data
     filtered_assets = df_assets.copy()
