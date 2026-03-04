@@ -1939,9 +1939,9 @@ elif selected == "Data Explorer":
         "Assets data", 
         "Work Orders data", 
         "Cost data", 
-        "Sensor Data", 
+        "Sensor data", 
         "Maintenance data",
-        "Combined Data"
+        "Combined data"
     ])
     
     with data_tab1:
@@ -1960,7 +1960,7 @@ elif selected == "Data Explorer":
         st.markdown(f"**Total Cost Records:** {len(df_costs)}")
 
     with data_tab4:
-        st.markdown("##### Sensor Data")
+        st.markdown("##### Sensor data")
         st.dataframe(df_sensors, use_container_width=True)
         st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the top 5,000 logs are shown for performance.")
 
@@ -1970,7 +1970,7 @@ elif selected == "Data Explorer":
         st.markdown(f"**Total Service Records:** {len(df_maintenance)}")
 
     with data_tab6:
-        st.markdown("##### Combined Data")
+        st.markdown("##### Combined data")
         st.caption("This table dynamically joins sensor datawith the asset metadata, exactly as it is fed into the Random Forest classification model.")
         try:
             # Combine Sensors with Assets dynamically
