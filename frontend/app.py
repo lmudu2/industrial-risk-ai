@@ -184,6 +184,7 @@ comp_model, comp_scaler, comp_features, cost_model = load_models()
 def cached_get_maintenance_recommendation(data):
     return get_maintenance_recommendation(data)
 
+@st.cache_data(ttl=600, show_spinner=False)
 def get_db_data():
     """Fetch all necessary data"""
     # Join assets with industries to get actual industry name
