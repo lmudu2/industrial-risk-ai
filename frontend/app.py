@@ -200,9 +200,13 @@ def get_db_data():
     query_costs = "SELECT * FROM cost_records"
     df_costs = pd.read_sql(query_costs, engine)
     
-    return df_assets, df_wo, df_costs
+    # Fetch sensor data (limited to prevent memory issues)
+    query_sensors = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 5000"
+    df_sensors = pd.read_sql(query_sensors, engine)
+    
+    return df_assets, df_wo, df_costs, df_sensors
 
-df_assets, df_wo, df_costs = get_db_data()
+df_assets, df_wo, df_costs, df_sensors = get_db_data()
 
 
 # ─────────────────────────────────────────────
@@ -1925,7 +1929,7 @@ elif selected == "Data Explorer":
     st.markdown("### Data Explorer")
     st.caption("View the raw datasets powering the Predictive Maintenance AI models and dashboard.")
     
-    data_tab1, data_tab2, data_tab3 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data"])
+    data_tab1, data_tab2, data_tab3, data_tab4 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data", "Sensor Data"])
     
     with data_tab1:
         st.markdown("##### Assets Directory")
@@ -1941,6 +1945,11 @@ elif selected == "Data Explorer":
         st.markdown("##### Cost Records")
         st.dataframe(df_costs, use_container_width=True)
         st.markdown(f"**Total Cost Records:** {len(df_costs)}")
+
+    with data_tab4:
+        st.markdown("##### Latest Sensor Readings")
+        st.dataframe(df_sensors, use_container_width=True)
+        st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the most recent 5,000 logs are shown for performance.")
 
 # ─────────────────────────────────────────────
 # SECTION 5: PERSISTENT AI ASSISTANT WIDGET
