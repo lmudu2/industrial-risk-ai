@@ -204,9 +204,16 @@ def get_db_data():
     query_sensors = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 5000"
     df_sensors = pd.read_sql(query_sensors, engine)
     
-    return df_assets, df_wo, df_costs, df_sensors
+    # Load Maintenance Records from CSV
+    try:
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'datasets', 'maintenance_records.csv')
+        df_maintenance = pd.read_csv(csv_path)
+    except Exception as e:
+        df_maintenance = pd.DataFrame()
+    
+    return df_assets, df_wo, df_costs, df_sensors, df_maintenance
 
-df_assets, df_wo, df_costs, df_sensors = get_db_data()
+df_assets, df_wo, df_costs, df_sensors, df_maintenance = get_db_data()
 
 
 # ─────────────────────────────────────────────
@@ -1928,31 +1935,43 @@ elif selected == "Data Explorer":
     st.markdown("### Data Explorer")
     st.caption("View the raw datasets powering the Predictive Maintenance AI models and dashboard.")
     
-    data_tab1, data_tab2, data_tab3, data_tab4, data_tab5 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data", "Sensor Data", "Combined Data"])
+    data_tab1, data_tab2, data_tab3, data_tab4, data_tab5, data_tab6 = st.tabs([
+        "Assets data", 
+        "Work Orders data", 
+        "Cost data", 
+        "Sensor Data", 
+        "Maintenance data",
+        "Combined Data"
+    ])
     
     with data_tab1:
-        st.markdown("##### Assets Directory")
+        st.markdown("##### Assets data")
         st.dataframe(df_assets, use_container_width=True)
         st.markdown(f"**Total Assets:** {len(df_assets)}")
         
     with data_tab2:
-        st.markdown("##### Work Orders History")
+        st.markdown("##### Work Orders data")
         st.dataframe(df_wo, use_container_width=True)
         st.markdown(f"**Total Work Orders:** {len(df_wo)}")
         
     with data_tab3:
-        st.markdown("##### Cost Records")
+        st.markdown("##### Cost data")
         st.dataframe(df_costs, use_container_width=True)
         st.markdown(f"**Total Cost Records:** {len(df_costs)}")
 
     with data_tab4:
-        st.markdown("##### Sensor Readings")
+        st.markdown("##### Sensor Data")
         st.dataframe(df_sensors, use_container_width=True)
         st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the top 5,000 logs are shown for performance.")
 
     with data_tab5:
+        st.markdown("##### Maintenance data")
+        st.dataframe(df_maintenance, use_container_width=True)
+        st.markdown(f"**Total Service Records:** {len(df_maintenance)}")
+
+    with data_tab6:
         st.markdown("##### Combined Data")
-        st.caption("This table dynamically joins sensor with the asset metadata, exactly as it is fed into the Random Forest classification model.")
+        st.caption("This table dynamically joins sensor datawith the asset metadata, exactly as it is fed into the Random Forest classification model.")
         try:
             # Combine Sensors with Assets dynamically
             df_combined = pd.merge(df_sensors, df_assets, left_on='asset_id', right_on='id', suffixes=('', '_asset_metadata'))
