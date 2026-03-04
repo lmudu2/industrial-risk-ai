@@ -389,12 +389,12 @@ if 'acknowledged_alerts' not in st.session_state:
 # NAVIGATION (TOP BAR)
 # ─────────────────────────────────────────────
 
-options = ["Executive Overview", "Asset Monitor", "Cost Analysis"]
+options = ["Data Explorer", "Executive Overview", "Asset Monitor", "Cost Analysis"]
 
 selected = option_menu(
     menu_title=None,
     options=options,
-    icons=["bar-chart-fill", "activity", "cash-coin"],
+    icons=["table", "bar-chart-fill", "activity", "cash-coin"],
     default_index=0,
     orientation="horizontal",
     key="main_navigation_menu",
@@ -1918,7 +1918,32 @@ elif selected == "Cost Analysis":
                             st.error(f"**Insight:**\n\nRunning to failure for these **{breakdown_freq} breakdowns** creates a massive financial penalty.\n\nWhile the actual repair only requires **{fmt_num(base_cost * breakdown_freq).replace('$', r'\$')}** in base labor and parts, treating it as an emergency adds **{fmt_num(emergency_penalties * breakdown_freq).replace('$', r'\$')}** in overtime/shipping penalties and triggers **{fmt_num(downtime_cost * breakdown_freq).replace('$', r'\$')}** in lost revenue.\n\n**Total Ad-Hoc Liability:** {fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}.")
         
 # ─────────────────────────────────────────────
-# SECTION 4: PERSISTENT AI ASSISTANT WIDGET
+# SECTION 4: DATA EXPLORER
+# ─────────────────────────────────────────────
+
+elif selected == "Data Explorer":
+    st.markdown("### 📊 Data Explorer")
+    st.caption("View the raw datasets powering the Predictive Maintenance AI models and dashboard.")
+    
+    data_tab1, data_tab2, data_tab3 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data"])
+    
+    with data_tab1:
+        st.markdown("##### 🏭 Assets Directory")
+        st.dataframe(df_assets, use_container_width=True)
+        st.markdown(f"**Total Assets:** {len(df_assets)}")
+        
+    with data_tab2:
+        st.markdown("##### 📋 Work Orders History")
+        st.dataframe(df_wo, use_container_width=True)
+        st.markdown(f"**Total Work Orders:** {len(df_wo)}")
+        
+    with data_tab3:
+        st.markdown("##### 💰 Cost Records")
+        st.dataframe(df_costs, use_container_width=True)
+        st.markdown(f"**Total Cost Records:** {len(df_costs)}")
+
+# ─────────────────────────────────────────────
+# SECTION 5: PERSISTENT AI ASSISTANT WIDGET
 # ─────────────────────────────────────────────
 
 import streamlit.components.v1 as components
