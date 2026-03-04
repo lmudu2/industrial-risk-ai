@@ -1922,23 +1922,23 @@ elif selected == "Cost Analysis":
 # ─────────────────────────────────────────────
 
 elif selected == "Data Explorer":
-    st.markdown("### 📊 Data Explorer")
+    st.markdown("### Data Explorer")
     st.caption("View the raw datasets powering the Predictive Maintenance AI models and dashboard.")
     
     data_tab1, data_tab2, data_tab3 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data"])
     
     with data_tab1:
-        st.markdown("##### 🏭 Assets Directory")
+        st.markdown("##### Assets Directory")
         st.dataframe(df_assets, use_container_width=True)
         st.markdown(f"**Total Assets:** {len(df_assets)}")
         
     with data_tab2:
-        st.markdown("##### 📋 Work Orders History")
+        st.markdown("##### Work Orders History")
         st.dataframe(df_wo, use_container_width=True)
         st.markdown(f"**Total Work Orders:** {len(df_wo)}")
         
     with data_tab3:
-        st.markdown("##### 💰 Cost Records")
+        st.markdown("##### Cost Records")
         st.dataframe(df_costs, use_container_width=True)
         st.markdown(f"**Total Cost Records:** {len(df_costs)}")
 
