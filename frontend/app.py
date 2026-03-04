@@ -1952,7 +1952,7 @@ elif selected == "Data Explorer":
         st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the top 5,000 logs are shown for performance.")
 
     with data_tab5:
-        st.markdown("##### ML Feature Matrix (Combined Data)")
+        st.markdown("##### Combined Data")
         st.caption("This table dynamically joins sensor with the asset metadata, exactly as it is fed into the Random Forest classification model.")
         try:
             # Combine Sensors with Assets dynamically
