@@ -204,10 +204,10 @@ def get_db_data():
     query_sensors = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 5000"
     df_sensors = pd.read_sql(query_sensors, engine)
     
-    # Load Maintenance Records from CSV
+    # Load Maintenance Records from Live Database (fixes .gitignore cloud deployment issue)
     try:
-        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'datasets', 'maintenance_records.csv')
-        df_maintenance = pd.read_csv(csv_path)
+        query_maint = "SELECT * FROM maintenance_records"
+        df_maintenance = pd.read_sql(query_maint, engine)
     except Exception as e:
         df_maintenance = pd.DataFrame()
     
