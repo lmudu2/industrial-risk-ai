@@ -1947,9 +1947,9 @@ elif selected == "Data Explorer":
         st.markdown(f"**Total Cost Records:** {len(df_costs)}")
 
     with data_tab4:
-        st.markdown("##### Latest Sensor Readings")
+        st.markdown("##### Sensor Readings")
         st.dataframe(df_sensors, use_container_width=True)
-        st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the most recent 5,000 logs are shown for performance.")
+        st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the top 5,000 logs are shown for performance.")
 
 # ─────────────────────────────────────────────
 # SECTION 5: PERSISTENT AI ASSISTANT WIDGET
