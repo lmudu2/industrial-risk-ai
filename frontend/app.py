@@ -1929,7 +1929,7 @@ elif selected == "Data Explorer":
     st.markdown("### Data Explorer")
     st.caption("View the raw datasets powering the Predictive Maintenance AI models and dashboard.")
     
-    data_tab1, data_tab2, data_tab3, data_tab4 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data", "Sensor Data"])
+    data_tab1, data_tab2, data_tab3, data_tab4, data_tab5 = st.tabs(["Assets Data", "Work Orders Data", "Cost Records Data", "Sensor Data", "Combined Data"])
     
     with data_tab1:
         st.markdown("##### Assets Directory")
@@ -1950,6 +1950,21 @@ elif selected == "Data Explorer":
         st.markdown("##### Sensor Readings")
         st.dataframe(df_sensors, use_container_width=True)
         st.markdown(f"**Displaying latest {len(df_sensors)} sensor records.** Note: Only the top 5,000 logs are shown for performance.")
+
+    with data_tab5:
+        st.markdown("##### ML Feature Matrix (Combined Data)")
+        st.caption("This table dynamically joins sensor with the asset metadata, exactly as it is fed into the Random Forest classification model.")
+        try:
+            # Combine Sensors with Assets dynamically
+            df_combined = pd.merge(df_sensors, df_assets, left_on='asset_id', right_on='id', suffixes=('', '_asset_metadata'))
+            # Drop the redundant ID column from the asset dataframe
+            if 'id_asset_metadata' in df_combined.columns:
+                df_combined = df_combined.drop(columns=['id_asset_metadata'])
+                
+            st.dataframe(df_combined, use_container_width=True)
+            st.markdown(f"**Combined Feature Rows:** {len(df_combined)}")
+        except Exception as e:
+            st.error(f"Could not combine ML datasets: {e}")
 
 # ─────────────────────────────────────────────
 # SECTION 5: PERSISTENT AI ASSISTANT WIDGET
