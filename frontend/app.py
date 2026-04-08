@@ -712,26 +712,17 @@ if selected == "Executive Overview":
     st.caption("AI-prioritized interventions based on failure probability, imminent risk, and economic impact.")
     
     # ── SHARED GLASSMORPHISM CSS ──
-    st.markdown("""
-        <style>
-        @keyframes pulse_alert { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.05);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    GLASS_STYLE = """
+<style>
+@keyframes pulse_alert {0%{opacity:1;}50%{opacity:0.5;}100%{opacity:1;}}
+.glass-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;border:1px solid rgba(0,0,0,0.05);padding:20px;margin-bottom:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);transition:transform 0.2s ease;}
+.glass-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);}
+</style>
+"""
+    if hasattr(st, "html"):
+        st.html(GLASS_STYLE)
+    else:
+        st.markdown(GLASS_STYLE, unsafe_allow_html=True)
     
     if all_predictions_df.empty:
         st.success("✅ No risks detected by AI across monitored assets.")
@@ -1934,180 +1925,32 @@ elif selected == "Data Explorer":
 import streamlit.components.v1 as components
 
 # CSS for the popover button styling + chat window
-st.markdown("""
+# CSS for the popover button styling + chat window
+FAB_STYLE = """
 <style>
-/* ── Pulse glow animation for the FAB ── */
-@keyframes pulseGlow {
-    0% { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-    50% { box-shadow: 0 4px 22px rgba(37, 99, 235, 0.5), 0 0 30px rgba(37, 99, 235, 0.15); }
-    100% { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-}
-
-/* ── Circular FAB Button (Blue Theme) ── */
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"],
-div[data-testid="stPopover"] button[kind="secondary"] {
-    width: 56px !important;
-    height: 56px !important;
-    min-width: 56px !important;
-    max-width: 56px !important;
-    min-height: 56px !important;
-    max-height: 56px !important;
-    border-radius: 50% !important;
-    -webkit-border-radius: 50% !important;
-    overflow: hidden !important;
-    background: #2563eb !important;
-    color: white !important;
-    border: none !important;
-    animation: pulseGlow 3s ease-in-out infinite !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 0 !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    cursor: pointer !important;
-    position: relative !important;
-    /* White chat bubble SVG icon */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 15.17L18.83 16H4V4h16v13.17zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    background-size: 26px 26px !important;
-}
-
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover,
-div[data-testid="stPopover"] button[kind="secondary"]:hover {
-    transform: scale(1.1) !important;
-    animation: none !important;
-    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5) !important;
-    background: #1d4ed8 !important;
-}
-
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active {
-    transform: scale(0.95) !important;
-}
-
-/* Hide any label/icon text inside the button */
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p,
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] span,
-div[data-testid="stPopover"] button[kind="secondary"] p,
-div[data-testid="stPopover"] button[kind="secondary"] span {
-    font-size: 0px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 0 !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-/* ── Red Notification Badge ── */
-div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]::after {
-    content: '';
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    width: 14px;
-    height: 14px;
-    background: #ef4444;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-}
-
-/* ── "Ask AI" Label Tooltip ── */
-div[data-testid="stPopover"]::before {
-    content: 'Ask AI';
-    position: absolute;
-    right: 70px; /* Position to the left of the 56px button */
-    top: 50%;
-    transform: translateY(-50%);
-    background: white;
-    color: #1e293b;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    white-space: nowrap;
-    opacity: 0.9;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-/* ── Popover Body (Chat Window) ── */
-div[data-testid="stPopoverBody"] {
-    width: 350px !important;
-    max-width: 85vw !important;
-    max-height: 50vh !important;
-    border-radius: 16px !important;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
-    padding: 0 !important;
-    overflow: auto !important;
-}
-
-/* Kill internal Streamlit padding wrappers inside popover */
-div[data-testid="stPopoverBody"] > div {
-    padding: 0 !important;
-}
-
-div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
-    gap: 0 !important;
-}
-
-/* ── Chat Header ── */
-.chat-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 14px 18px;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    border-radius: 0;
-}
-
-.chat-header .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.chat-header .status-dot {
-    width: 8px;
-    height: 8px;
-    background: #4ade80;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
-    animation: statusPulse 2s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.chat-header .status-badge {
-    font-size: 10px;
-    font-weight: 500;
-    background: rgba(255,255,255,0.2);
-    padding: 3px 8px;
-    border-radius: 10px;
-    letter-spacing: 0.3px;
-}
-
-/* ── Chat Input ── */
-div[data-testid="stPopoverBody"] div[data-testid="stChatInput"] {
-    position: sticky;
-    bottom: 0px;
-    background: white;
-    padding: 10px 12px;
-    border-top: 1px solid #f0f0f0;
-}
+@keyframes pulseGlow{0%{box-shadow:0 4px 12px rgba(37,99,235,0.3);}50%{box-shadow:0 4px 22px rgba(37,99,235,0.5),0 0 30px rgba(37,99,235,0.15);}100%{box-shadow:0 4px 12px rgba(37,99,235,0.3);}}
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"],div[data-testid="stPopover"] button[kind="secondary"]{width:56px!important;height:56px!important;min-width:56px!important;max-width:56px!important;min-height:56px!important;max-height:56px!important;border-radius:50%!important;-webkit-border-radius:50%!important;overflow:hidden!important;background:#2563eb!important;color:white!important;border:none!important;animation:pulseGlow 3s ease-in-out infinite!important;display:flex!important;justify-content:center!important;align-items:center!important;padding:0!important;transition:transform 0.3s ease,box-shadow 0.3s ease!important;cursor:pointer!important;position:relative!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 15.17L18.83 16H4V4h16v13.17zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:center!important;background-size:26px 26px!important;}
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover,div[data-testid="stPopover"] button[kind="secondary"]:hover{transform:scale(1.1)!important;animation:none!important;box-shadow:0 6px 25px rgba(37,99,235,0.5)!important;background:#1d4ed8!important;}
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active{transform:scale(0.95)!important;}
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p,div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] span,div[data-testid="stPopover"] button[kind="secondary"] p,div[data-testid="stPopover"] button[kind="secondary"] span{font-size:0px!important;margin:0!important;padding:0!important;line-height:0!important;visibility:hidden!important;width:0!important;height:0!important;overflow:hidden!important;}
+div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]::after{content:'';position:absolute;top:0px;right:0px;width:14px;height:14px;background:#ef4444;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(239, 68, 68, 0.4);}
+div[data-testid="stPopover"]::before{content:'Ask AI';position:absolute;right:70px;top:50%;transform:translateY(-50%);background:white;color:#1e293b;padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.1);white-space:nowrap;opacity:0.9;pointer-events:none;z-index:1000;}
+div[data-testid="stPopoverBody"]{width:350px!important;max-width:85vw!important;max-height:50vh!important;border-radius:16px!important;box-shadow:0 15px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)!important;padding:0!important;overflow:auto!important;}
+div[data-testid="stPopoverBody"] > div{padding:0!important;}
+div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"]{gap:0!important;}
+.chat-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:14px 18px;font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.1);border-radius:0;}
+.chat-header .header-left{display:flex;align-items:center;gap:8px;}
+.chat-header .status-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block;box-shadow:0 0 6px rgba(74, 222, 128, 0.6);animation:statusPulse 2s ease-in-out infinite;}
+@keyframes statusPulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.chat-header .status-badge{font-size:10px;font-weight:500;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:10px;letter-spacing:0.3px;}
+div[data-testid="stPopoverBody"] div[data-testid="stChatInput"]{position:sticky;bottom:0px;background:white;padding:10px 12px;border-top:1px solid #f0f0f0;}
 </style>
-""", unsafe_allow_html=True)
+"""
+
+if hasattr(st, "html"):
+    st.html(FAB_STYLE)
+else:
+    st.markdown(FAB_STYLE, unsafe_allow_html=True)
 
 # The native popover button acting as the circular Chat Icon
 with st.popover("", icon=":material/chat:"):
