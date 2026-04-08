@@ -68,7 +68,7 @@ except Exception as e:
 # CUSTOM CSS - PROFESSIONAL LIGHT MODE
 # ─────────────────────────────────────────────
 
-st.markdown("""
+CSS = """
 <style>
     /* Global Settings */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -156,9 +156,10 @@ st.markdown("""
     
     .priority-critical { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     .priority-high { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
-    
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(CSS, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # LOAD DATA & MODELS
