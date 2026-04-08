@@ -1,5 +1,7 @@
 # Asset Risk Analysis for Industrial Machinery 🏭🛰️📡
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lmudu2/industrial-risk-ai/blob/main/Open_in_Colab.ipynb)
+
 An Enterprise Asset Management (EAM) Predictive Maintenance Platform that leverages Machine Learning and Generative AI to monitor, analyze, and mitigate industrial equipment risks.
 
 ## 🚀 Overview
