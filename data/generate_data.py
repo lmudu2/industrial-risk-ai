@@ -554,12 +554,17 @@ def generate_data(num_assets_per_industry: int = 20):
     industry_objects = []
     
     for ind in industries_data:
-        industry = Industry(name=ind["name"], description=ind["description"])
-        db.add(industry)
+        # Check if industry already exists
+        industry = db.query(Industry).filter(Industry.name == ind["name"]).first()
+        if not industry:
+            industry = Industry(name=ind["name"], description=ind["description"])
+            db.add(industry)
+            db.flush() # Ensure ID is populated
+        
         industry_objects.append(industry)
     
     db.commit()
-    print(f"✅ Created {len(industry_objects)} industries")
+    print(f"✅ Resolved {len(industry_objects)} industries")
 
     # ─────────────────────────────────────────────
     # STEP 2: CREATE ASSETS
