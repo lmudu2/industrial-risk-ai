@@ -68,94 +68,39 @@ except Exception as e:
 # CUSTOM CSS - PROFESSIONAL LIGHT MODE
 # ─────────────────────────────────────────────
 
-st.markdown("""<style>
-    /* Global Settings */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .stApp, [data-testid="stSidebar"], [data-testid="stHeader"], .st-emotion-cache-16txtl3 {
-        background-color: #f8f9fa !important;
-        color: #1f2937 !important;
-    }
-    
-    /* Ensure all headers and text are visible */
-    h1, h2, h3, h4, h5, h6, p, div, span, label, .stMarkdown {
-        color: #1f2937 !important;
-    }
-    
-    /* Input and Select box Fixes */
-    .stSelectbox [data-testid="stMarkdownContainer"], .stTextInput input {
-        color: #1f2937 !important;
-        background-color: #ffffff !important;
-    }
+# ─────────────────────────────────────────────
+# CUSTOM CSS - PROFESSIONAL LIGHT MODE
+# ─────────────────────────────────────────────
 
-    [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e5e7eb;
-    }
-    
-    /* Navigation Bar adjustment */
-    .st-emotion-cache-16txtl3 {
-        padding-top: 0rem;
-    }
+CSS_STYLE = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+html,body,[class*="css"]{font-family:'Inter',sans-serif;}
+.stApp,[data-testid="stSidebar"],[data-testid="stHeader"],.st-emotion-cache-16txtl3{background-color:#f8f9fa!important;color:#1f2937!important;}
+h1,h2,h3,h4,h5,h6,p,div,span,label,.stMarkdown{color:#1f2937!important;}
+.stSelectbox [data-testid="stMarkdownContainer"],.stTextInput input{color:#1f2937!important;background-color:#ffffff!important;}
+[data-testid="stSidebar"]{background-color:#ffffff!important;border-right:1px solid #e5e7eb;}
+.st-emotion-cache-16txtl3{padding-top:0rem;}
+.metric-card{background-color:#ffffff;border-radius:8px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);border:1px solid #e5e7eb;margin-bottom:20px;}
+.metric-value{font-size:28px;font-weight:700;color:#111827;}
+.metric-label{font-size:14px;color:#6b7280;font-weight:500;margin-bottom:5px;}
+.metric-delta{font-size:12px;font-weight:600;padding:2px 8px;border-radius:12px;}
+.delta-pos{background-color:#dcfce7;color:#166534;}
+.delta-neg{background-color:#fee2e2;color:#991b1b;}
+.delta-neutral{background-color:#f3f4f6;color:#374151;}
+.maintenance-item{padding:12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;}
+.maintenance-item:last-child{border-bottom:none;}
+.status-badge{padding:4px 12px;border-radius:4px;font-size:12px;font-weight:600;}
+.priority-critical{background-color:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.priority-high{background-color:#ffedd5;color:#9a3412;border:1px solid #fed7aa;}
+</style>
+"""
 
-    /* Card Styling */
-    .metric-card {
-        background-color: #ffffff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
-        margin-bottom: 20px;
-    }
-    
-    .metric-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: #111827;
-    }
-    
-    .metric-label {
-        font-size: 14px;
-        color: #6b7280;
-        font-weight: 500;
-        margin-bottom: 5px;
-    }
-
-    .metric-delta {
-        font-size: 12px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 12px;
-    }
-
-    .delta-pos { background-color: #dcfce7; color: #166534; }
-    .delta-neg { background-color: #fee2e2; color: #991b1b; }
-    .delta-neutral { background-color: #f3f4f6; color: #374151; }
-    
-    /* Active Maintenance List */
-    .maintenance-item {
-        padding: 12px;
-        border-bottom: 1px solid #f3f4f6;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .maintenance-item:last-child { border-bottom: none; }
-    
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    
-    .priority-critical { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .priority-high { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
-</style>""", unsafe_allow_html=True)
+# Use st.html if available (Streamlit 1.34+), otherwise fallback to st.markdown
+if hasattr(st, "html"):
+    st.html(CSS_STYLE)
+else:
+    st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # LOAD DATA & MODELS
