@@ -8,6 +8,24 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ─────────────────────────────────────────────
+# COMPATIBILITY LAYER (For Streamlit < 1.34.0)
+# ─────────────────────────────────────────────
+if not hasattr(st, "dialog"):
+    def dialog_fallback(title, width="medium"):
+        def decorator(func):
+            def wrapper(*args, **kwargs):
+                with st.expander(f"Dialog: {title}", expanded=True):
+                    return func(*args, **kwargs)
+            return wrapper
+        return decorator
+    st.dialog = dialog_fallback
+
+if not hasattr(st, "html"):
+    def html_fallback(html_content):
+        st.markdown(html_content, unsafe_allow_html=True)
+    st.html = html_fallback
+
 from streamlit_option_menu import option_menu
 import pandas as pd
 import plotly.express as px
@@ -1781,10 +1799,15 @@ elif selected == "Cost Analysis":
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing maintenance ROI..."):
+                            # Pre-calculate escaped strings to avoid backslashes in f-strings (fixes SyntaxError)
+                            esc_do_nothing = fmt_num(year_1_do_nothing_cost).replace('$', r'\$')
+                            esc_preventive = fmt_num(year_1_preventive_cost).replace('$', r'\$')
+                            esc_avoided = fmt_num(avoided_cost).replace('$', r'\$')
+
                             if avoided_cost > 0:
-                                st.success(f"**Insight:**\n\nIf you ignore these {num_assets} units, you risk **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}** in emergency breakdown costs. By spending **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}** on scheduled maintenance now, you yield a net savings of **{fmt_num(avoided_cost).replace('$', r'\$')}**.")
+                                st.success(f"**Insight:**\n\nIf you ignore these {num_assets} units, you risk **{esc_do_nothing}** in emergency breakdown costs. By spending **{esc_preventive}** on scheduled maintenance now, you yield a net savings of **{esc_avoided}**.")
                             else:
-                                st.warning(f"**Insight:**\n\nThe planned preventive schedule costs **{fmt_num(year_1_preventive_cost).replace('$', r'\$')}**, which is higher than the estimated breakdown risk of **{fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}**. Consider reducing your inspection frequency.")
+                                st.warning(f"**Insight:**\n\nThe planned preventive schedule costs **{esc_preventive}**, which is higher than the estimated breakdown risk of **{esc_do_nothing}**. Consider reducing your inspection frequency.")
         
         # ── Ad-hoc / Corrective Cost Estimator ────────────────────────────────
         with pred_tab3:
@@ -1845,7 +1868,13 @@ elif selected == "Cost Analysis":
                         
                         # Insight block with explicit mathematical explanation
                         with st.spinner("Analyzing ad-hoc impact..."):
-                            st.error(f"**Insight:**\n\nRunning to failure for these **{breakdown_freq} breakdowns** creates a massive financial penalty.\n\nWhile the actual repair only requires **{fmt_num(base_cost * breakdown_freq).replace('$', r'\$')}** in base labor and parts, treating it as an emergency adds **{fmt_num(emergency_penalties * breakdown_freq).replace('$', r'\$')}** in overtime/shipping penalties and triggers **{fmt_num(downtime_cost * breakdown_freq).replace('$', r'\$')}** in lost revenue.\n\n**Total Ad-Hoc Liability:** {fmt_num(year_1_do_nothing_cost).replace('$', r'\$')}.")
+                            # Pre-calculate escaped strings to avoid backslashes in f-strings (fixes SyntaxError)
+                            esc_base = fmt_num(base_cost * breakdown_freq).replace('$', r'\$')
+                            esc_penalty = fmt_num(emergency_penalties * breakdown_freq).replace('$', r'\$')
+                            esc_downtime = fmt_num(downtime_cost * breakdown_freq).replace('$', r'\$')
+                            esc_total = fmt_num(year_1_do_nothing_cost).replace('$', r'\$')
+
+                            st.error(f"**Insight:**\n\nRunning to failure for these **{breakdown_freq} breakdowns** creates a massive financial penalty.\n\nWhile the actual repair only requires **{esc_base}** in base labor and parts, treating it as an emergency adds **{esc_penalty}** in overtime/shipping penalties and triggers **{esc_downtime}** in lost revenue.\n\n**Total Ad-Hoc Liability:** {esc_total}.")
         
 # ─────────────────────────────────────────────
 # SECTION 4: DATA EXPLORER
