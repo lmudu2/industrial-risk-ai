@@ -1,6 +1,6 @@
 # Asset Risk Analysis for Industrial Machinery 🏭🛰️📡
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lmudu2/industrial-risk-ai/blob/main/Open_in_Colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lmudu2/industrial-risk-ai/blob/main/Predictive_Maintenance_Platform.ipynb)
 
 An Enterprise Asset Management (EAM) Predictive Maintenance Platform that leverages Machine Learning and Generative AI to monitor, analyze, and mitigate industrial equipment risks.
 
@@ -13,6 +13,7 @@ This platform provides a comprehensive suite for cross-industry asset management
 
 ## 🌐 Deployment Options
 - **Streamlit Cloud (Live)**: [Industrial Risk AI Dashboard](https://chatbotservicepy-nuclcdfs5huczcuadti3as.streamlit.app)
+- **Google Colab (One-Click Deploy)**: [Open Notebook](https://colab.research.google.com/github/lmudu2/industrial-risk-ai/blob/main/Predictive_Maintenance_Platform.ipynb)
 
 ## 🏗️ Architecture
 - **Frontend**: Streamlit-based AI-first dashboard with glassmorphism aesthetics and interactive visualizations.
@@ -26,25 +27,14 @@ This platform provides a comprehensive suite for cross-industry asset management
 - **Cost Predictor Simulator**: A "what-if" tool for finance-aligned maintenance strategy.
 - **Resilient Chatbot**: An enterprise-grade assistant with SQL privacy hardening and deep semantic awareness of dashboard data.
 
-## 🏁 Getting Started
+## 🏁 Getting Started (Local Run)
 1. **Clone the repository**:
    ```bash
-   git clone <remote-url>
-   cd asset-risk-analysis-industrial-machinery
+   git clone https://github.com/lmudu2/industrial-risk-ai.git
+   cd industrial-risk-ai
    ```
-2. **Setup environment**:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
-3. **Configure API Keys**:
-   Create a `.env` file in the root directory:
-   ```env
-   GROQ_API_KEY=your_key_here
-   SENDGRID_API_KEY=your_key_here
-   ```
-4. **Launch Platform**:
+2. **Launch Platform**:
+   I have provided a unified script that handles environment activation and launches both Backend and Frontend:
    ```bash
    chmod +x start_app.sh
    ./start_app.sh
