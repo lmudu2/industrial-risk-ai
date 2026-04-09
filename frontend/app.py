@@ -610,7 +610,7 @@ if selected == "Executive Overview":
     
     if new_wo_created:
         st.cache_data.clear() # Clear cache to fetch new WOs next refresh
-        df_assets, df_wo, df_costs = get_db_data() # Refresh data immediately for this run
+        df_assets, df_wo, df_costs, df_sensors, df_maintenance = get_db_data() # Refresh data immediately for this run
         filtered_wo = df_wo[df_wo['asset_id'].isin(filtered_assets['id'])]
     
     # Use ALL predictions for the action center display, but sorted
