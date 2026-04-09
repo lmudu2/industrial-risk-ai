@@ -1082,22 +1082,8 @@ elif selected == "Asset Monitor":
         if not sensors_raw.empty:
             sensors_raw['timestamp'] = pd.to_datetime(sensors_raw['timestamp'], format='ISO8601')
             
-            # --- TIME RANGE FILTER ---
-            time_filter = st.radio(
-                "Time Range", 
-                ["Latest 30 Days", "Latest 6 Months", "All Time"], 
-                index=0, horizontal=True, label_visibility="collapsed"
-            )
-            
-            now = pd.Timestamp.now()
-
-            if time_filter == "Latest 30 Days":
-                cutoff = now - pd.Timedelta(days=30)
-            elif time_filter == "Latest 6 Months":
-                cutoff = now - pd.Timedelta(days=180)
-            else:
-                cutoff = sensors_raw['timestamp'].min()
-                
+            # --- TIME RANGE: ALWAYS ALL TIME ---
+            cutoff = sensors_raw['timestamp'].min()
             sensors = sensors_raw[sensors_raw['timestamp'] >= cutoff]
 
             # Sensor summary KPI row
