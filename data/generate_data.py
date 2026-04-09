@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
 from models import (
     Industry, Asset, Sensor, 
-    MaintenanceRecord, WorkOrder, CostRecord,
+    MaintenanceRecord, WorkOrder, CostRecord, Prediction,
     AssetStatus, MaintenanceType, WorkOrderStatus, Priority
 )
+from ml.predict import persist_fleet_predictions
 from faker import Faker
 from datetime import datetime, timedelta
 import random
@@ -619,7 +620,7 @@ def generate_data(num_assets_per_industry: int = 20):
     print("   (This takes ~1-2 minutes...)")
     
     sensor_count = 0
-    DAYS_OF_HISTORY = 180  # 6 months
+    DAYS_OF_HISTORY = 30  # Optimized for GitHub 100MB limit
     HOURS_OF_HISTORY = DAYS_OF_HISTORY * 24
     
     for asset_idx, asset in enumerate(asset_objects):
@@ -897,6 +898,16 @@ def generate_data(num_assets_per_industry: int = 20):
 
     db.commit()
     print(f"✅ Created {cost_count:,} cost records")
+    
+    # ─────────────────────────────────────────────
+    # STEP 7: GENERATE INITIAL AI INSIGHTS
+    # ─────────────────────────────────────────────
+    print("\n🔮 Step 7: Generating Initial AI Insights & Predictions...")
+    try:
+        persist_fleet_predictions()
+        print("✅ Predictions table initialized and populated.")
+    except Exception as e:
+        print(f"⚠️ Prediction backfill failed: {e}")
 
     db.close()
     

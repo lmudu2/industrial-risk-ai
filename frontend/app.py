@@ -146,33 +146,37 @@ def cached_get_maintenance_recommendation(data):
 
 @st.cache_data(ttl=600, show_spinner=False)
 def get_db_data():
-    """Fetch all necessary data"""
-    # Join assets with industries to get actual industry name
-    query_assets = """
-    SELECT a.*, i.name as industry_name 
-    FROM assets a
-    JOIN industries i ON a.industry_id = i.id
-    """
-    df_assets = pd.read_sql(query_assets, engine)
-    
-    query_wo = "SELECT * FROM work_orders"
-    df_wo = pd.read_sql(query_wo, engine)
-    
-    query_costs = "SELECT * FROM cost_records"
-    df_costs = pd.read_sql(query_costs, engine)
-    
-    # Fetch sensor data (limited to prevent memory issues)
-    query_sensors = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 5000"
-    df_sensors = pd.read_sql(query_sensors, engine)
-    
-    # Load Maintenance Records from Live Database (fixes .gitignore cloud deployment issue)
+    """Fetch all necessary data with safety for read-only environments"""
     try:
-        query_maint = "SELECT * FROM maintenance_records"
-        df_maintenance = pd.read_sql(query_maint, engine)
+        # Join assets with industries to get actual industry name
+        query_assets = """
+        SELECT a.*, i.name as industry_name 
+        FROM assets a
+        JOIN industries i ON a.industry_id = i.id
+        """
+        df_assets = pd.read_sql(query_assets, engine)
+        
+        query_wo = "SELECT * FROM work_orders"
+        df_wo = pd.read_sql(query_wo, engine)
+        
+        query_costs = "SELECT * FROM cost_records"
+        df_costs = pd.read_sql(query_costs, engine)
+        
+        query_sensors = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 5000"
+        df_sensors = pd.read_sql(query_sensors, engine)
+        
+        try:
+            query_maint = "SELECT * FROM maintenance_records"
+            df_maintenance = pd.read_sql(query_maint, engine)
+        except:
+            df_maintenance = pd.DataFrame()
+        
+        return df_assets, df_wo, df_costs, df_sensors, df_maintenance
     except Exception as e:
-        df_maintenance = pd.DataFrame()
-    
-    return df_assets, df_wo, df_costs, df_sensors, df_maintenance
+        st.error(f"⚠️ **Database Access Error**: {str(e)}")
+        # Return empty DFs to prevent the rest of the app from crashing
+        empty = pd.DataFrame()
+        return empty, empty, empty, empty, empty
 
 df_assets, df_wo, df_costs, df_sensors, df_maintenance = get_db_data()
 
@@ -578,35 +582,39 @@ if selected == "Executive Overview":
     predicted_critical_assets = [p for p in all_predictions if p['risk_level'] in ['Critical', 'High Risk']]
     
     # Handle Database side-effects (AI Work Order Generation) separately from the cache
-    db = SessionLocal()
-    new_wo_created = False
-    
-    for asset_pred in predicted_critical_assets:
-        if asset_pred['risk_level'] in ['Critical', 'High Risk']:
-            # Check if active AI generated work order exists
-            existing_wo = db.query(WorkOrder).filter(
-                WorkOrder.asset_id == asset_pred['id'], 
-                WorkOrder.status == 'in_progress', 
-                WorkOrder.title.like('%AI GENERATED%')
-            ).first()
-            if not existing_wo:
-                import random
-                techs = ['Tech A. Miller', 'Tech B. Johnson', 'Eng C. Smith', 'Tech D. Garcia']
-                new_wo = WorkOrder(
-                    asset_id=asset_pred['id'],
-                    title=f"AI GENERATED: {asset_pred['risk_level']} Intervention Required - {asset_pred['name']}",
-                    description=f"AI detected {asset_pred['risk_level']} risk ({asset_pred['risk_score']}%). Expected failure in {asset_pred['rul']} days.",
-                    status='in_progress',
-                    priority='critical' if asset_pred['risk_level'] == 'Critical' else 'high',
-                    assigned_to=random.choice(techs),
-                    created_at=datetime.utcnow()
-                )
-                db.add(new_wo)
-                db.commit()
-                new_wo_created = True
-                new_wo_created = True
-                
-    db.close()
+    try:
+        db = SessionLocal()
+        new_wo_created = False
+        
+        for asset_pred in predicted_critical_assets:
+            if asset_pred['risk_level'] in ['Critical', 'High Risk']:
+                # Check if active AI generated work order exists
+                existing_wo = db.query(WorkOrder).filter(
+                    WorkOrder.asset_id == asset_pred['id'], 
+                    WorkOrder.status == 'in_progress', 
+                    WorkOrder.title.like('%AI GENERATED%')
+                ).first()
+                if not existing_wo:
+                    import random
+                    techs = ['Tech A. Miller', 'Tech B. Johnson', 'Eng C. Smith', 'Tech D. Garcia']
+                    new_wo = WorkOrder(
+                        asset_id=asset_pred['id'],
+                        title=f"AI GENERATED: {asset_pred['risk_level']} Intervention Required - {asset_pred['name']}",
+                        description=f"AI detected {asset_pred['risk_level']} risk ({asset_pred['risk_score']}%). Expected failure in {asset_pred['rul']} days.",
+                        status='in_progress',
+                        priority='critical' if asset_pred['risk_level'] == 'Critical' else 'high',
+                        assigned_to=random.choice(techs),
+                        created_at=datetime.utcnow()
+                    )
+                    db.add(new_wo)
+                    db.commit()
+                    new_wo_created = True
+                    
+        db.close()
+    except Exception as e:
+        # Gracefully handle Read-Only errors (common on Streamlit Cloud)
+        print(f"Database write skipped or failed: {e}")
+        new_wo_created = False
     
     if new_wo_created:
         st.cache_data.clear() # Clear cache to fetch new WOs next refresh
