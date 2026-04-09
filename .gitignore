@@ -32,7 +32,7 @@ data/datasets/*
 .idea/
 
 # Streamlit logs/cache
-.streamlit/
+.streamlit/*
 !.streamlit/config.toml
 
 # LLM/Brain artifacts (Internal development files)
